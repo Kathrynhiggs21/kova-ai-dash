@@ -510,7 +510,7 @@ export default function Home() {
   const healthPct = Math.round((connectedCount / total) * 100);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="bg-background">
       {/* Hero */}
       <div className="relative overflow-hidden">
         {/* Orb background */}
