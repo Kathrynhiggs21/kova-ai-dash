@@ -4,10 +4,14 @@
  * Full cross-linked control panel: Worlds, Services, Katy AI, GitHub, Wix Sites
  */
 
-import { useState } from "react";
-import { ExternalLink, Github, Globe, Lock, Cpu, FolderOpen, Bot, Zap, ChevronRight } from "lucide-react";
+import { useState, useMemo } from "react";
+import { ExternalLink, Github, Globe, Lock, Cpu, FolderOpen, Bot, Zap, ChevronRight, Search, X, BookOpen, Database } from "lucide-react";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
+
+// ─── SEARCH INDEX ────────────────────────────────────────────────────────────
+// All searchable items across the hub
+type SearchItem = { label: string; sub: string; url: string; category: string; emoji?: string };
 
 const KOVA_WORLDS = [
   { name: "Kova OS", emoji: "🖥️", color: "from-violet-600 to-cyan-600", driveId: "1w-e10-QcWBglQRm4N1L5Lh09w4ZPvwFp", description: "Core OS — tech, AI, business, dev", tags: ["Manus", "GitHub", "Drive"] },
@@ -20,10 +24,10 @@ const KOVA_WORLDS = [
   { name: "Pets", emoji: "🐾", color: "from-yellow-600 to-orange-500", driveId: "1EbfbPA50h0W0T-IMP5f2Nz2f5Y1gLbX8", description: "All animal companions", tags: ["Drive"] },
   { name: "Travel", emoji: "✈️", color: "from-sky-600 to-blue-600", driveId: "1ZQLZsVp9pzD0puv8YqkYozyabBZJ63hn", description: "Adventures & trip planning", tags: ["Drive", "Calendar"] },
   { name: "Photos", emoji: "📸", color: "from-indigo-600 to-violet-600", driveId: "1drTNF68XAT1QPrM5uBFL-CjMuQO-zV8W", description: "Organized photo library", tags: ["Drive"] },
-  { name: "Soccer (Turpin)", emoji: "⚽", color: "from-green-600 to-emerald-600", driveId: "15hZvXM8dLbMWzTvAW7NYecYURJQ778rR", description: "Coaching world", tags: ["Drive", "Asana"] },
+  { name: "Soccer (Turpin)", emoji: "⚽", color: "from-green-600 to-emerald-600", driveId: "1Vz5HEq9OMEZYR0JucI-4ClQ9EKNHiN8V", description: "Coaching world", tags: ["Drive", "Asana"] },
   { name: "Household Collective", emoji: "🏘️", color: "from-amber-600 to-yellow-500", driveId: "1sTsahy7Mx9K8gXl8migE6kC2NJuMLy3Z", description: "Household projects", tags: ["Drive"] },
   { name: "Apps", emoji: "📱", color: "from-blue-600 to-indigo-600", driveId: "1TyIfbpw6eVVJLJRo7Nh_tdo4V15FPRDT", description: "App content & integrations", tags: ["Slack", "Notion", "Zapier"] },
-  { name: "Vault", emoji: "🔐", color: "from-zinc-700 to-zinc-600", driveId: "1xKBPt3SG5arjV_lGVsVG4L3Kxx8DQ9a4", description: "Sensitive & important info", tags: ["Drive"] },
+  { name: "Vault", emoji: "🔐", color: "from-zinc-700 to-zinc-600", driveId: "1FU7YTFCqO81URaGj5ufj097BaNjHpItf", description: "Sensitive & important info", tags: ["Drive"] },
   { name: "Inbox", emoji: "📥", color: "from-slate-600 to-zinc-600", driveId: "1MWnLkOlpxk88k4IxkEwDmVMpM2PJ7rEr", description: "Catch-all before filing", tags: ["Gmail", "Outlook"] },
 ];
 
@@ -67,15 +71,22 @@ const GITHUB_REPOS = [
   { name: "mem0", url: "https://github.com/Kathrynhiggs21/mem0", desc: "KOVA Life OS Memory Sync", private: true, updated: "2025-08-27", kova: true },
   { name: "TheCenterApp", url: "https://github.com/Kathrynhiggs21/TheCenterApp", desc: "The Center App", private: true, updated: "2025-04-22", kova: false },
   { name: "theCenter-App", url: "https://github.com/Kathrynhiggs21/theCenter-App", desc: "The Center App", private: false, updated: "2025-04-08", kova: false },
+  { name: "theCenter", url: "https://github.com/Kathrynhiggs21/theCenter", desc: "The Center", private: true, updated: "2025-04-08", kova: false },
+  { name: "TheCenter-7d530", url: "https://github.com/Kathrynhiggs21/TheCenter-7d530", desc: "The Center (Netlify)", private: false, updated: "2025-06-01", kova: false },
+  { name: "netlify-thecenter", url: "https://github.com/Kathrynhiggs21/netlify-thecenter", desc: "Netlify The Center", private: false, updated: "2025-04-22", kova: false },
   { name: "Reagan-App-", url: "https://github.com/Kathrynhiggs21/Reagan-App-", desc: "Reagan App", private: false, updated: "2025-10-20", kova: false },
   { name: "wix-commerce-ticketing-nextjs-template", url: "https://github.com/Kathrynhiggs21/wix-commerce-ticketing-nextjs-template", desc: "Wix commerce template", private: true, updated: "2025-08-20", kova: false },
+  { name: "headless-templates", url: "https://github.com/Kathrynhiggs21/headless-templates", desc: "Headless templates", private: false, updated: "2025-04-01", kova: false },
   { name: "platforms-starter-kit", url: "https://github.com/Kathrynhiggs21/platforms-starter-kit", desc: "Platforms starter kit", private: true, updated: "2025-10-06", kova: false },
+  { name: "Kova-AI-Scribbles", url: "https://github.com/Kathrynhiggs21/Kova-AI-Scribbles", desc: "Kova AI Scribbles", private: false, updated: "2025-10-20", kova: true },
 ];
 
 const KATY_AI_LINKS = [
   { name: "Manus AI", desc: "Your primary AI — fully connected to Kova OS", url: "https://manus.im", icon: "🤖", status: "active" },
   { name: "Kova OS Master Dashboard (Notion)", desc: "Live dashboard with all worlds, integrations & skills", url: "https://www.notion.so/31bab88660a5819db8b5d822aec837f6", icon: "📊", status: "active" },
-  { name: "Integration Links Guide (Notion)", desc: "One-click links to connect every integration", url: "https://www.notion.so/31bab88660a581f992f7df100212a00d", icon: "🔗", status: "active" },
+  { name: "Skills Registry (Notion)", desc: "All 36 Manus skills installed for Kova OS", url: "https://app.notion.com/p/38eab88660a581b79ce4f1da4ade23d3", icon: "🛠️", status: "active" },
+  { name: "GitHub Index (Notion)", desc: "All 30 repos indexed and linked", url: "https://app.notion.com/p/38eab88660a5815089f3d6332ec04f9e", icon: "🐙", status: "active" },
+  { name: "Integration Status (Notion)", desc: "Live connection status for all services", url: "https://app.notion.com/p/38eab88660a581158fd3d08fa6cf7506", icon: "🔌", status: "active" },
   { name: "ChatGPT", desc: "OpenAI assistant — history not synced to Kova", url: "https://chat.openai.com", icon: "💬", status: "partial" },
   { name: "Claude (Anthropic)", desc: "Anthropic assistant — history not synced to Kova", url: "https://claude.ai", icon: "🧬", status: "partial" },
   { name: "Google Gemini", desc: "Google AI assistant", url: "https://gemini.google.com", icon: "✨", status: "partial" },
@@ -200,17 +211,94 @@ function KatyAICard({ item }: { item: typeof KATY_AI_LINKS[0] }) {
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 
+const NOTION_WORLD_PAGES = [
+  { name: "🖥️ Kova OS World", url: "https://app.notion.com/p/38eab88660a5811e91c5fb4d21daf249" },
+  { name: "🤖 AI World", url: "https://app.notion.com/p/38eab88660a5816fb223f098fa873630" },
+  { name: "🧠 The Anxiety Center", url: "https://app.notion.com/p/38eab88660a581e3932de81f20e7bbbf" },
+  { name: "✏️ Scribbles by Marcy", url: "https://app.notion.com/p/38eab88660a58127a210f01947ea7bf1" },
+  { name: "👧 Reagan", url: "https://app.notion.com/p/38eab88660a581ba847cd5e6bfff0809" },
+  { name: "🌸 Katy", url: "https://app.notion.com/p/38eab88660a581a080abcb094a533c94" },
+  { name: "🏠 Dojo", url: "https://app.notion.com/p/38eab88660a581808b61ec2a2eacb88e" },
+  { name: "🐾 Pets", url: "https://app.notion.com/p/38eab88660a581529129f9e24816d970" },
+  { name: "✈️ Travel", url: "https://app.notion.com/p/38eab88660a581238724df96cbafbb57" },
+  { name: "📸 Photos", url: "https://app.notion.com/p/38eab88660a58169adc9cf8075744c7b" },
+  { name: "⚽ Soccer (Turpin)", url: "https://app.notion.com/p/38eab88660a581bfa5d9e65c6c0a7dcd" },
+  { name: "🏘️ Household Collective", url: "https://app.notion.com/p/38eab88660a581bfa600e68a4434617e" },
+  { name: "📱 Apps", url: "https://app.notion.com/p/38eab88660a5816499ccde9fa68a5c0b" },
+  { name: "🔐 Vault", url: "https://app.notion.com/p/38eab88660a58125b1f2ec6f95fc4e8c" },
+  { name: "📥 Inbox", url: "https://app.notion.com/p/38eab88660a5816c924ef10125a3ddae" },
+];
+
 const SERVICE_CATEGORIES = ["All", "Google", "Microsoft", "Productivity", "AI", "Automation", "Database"];
 
 export default function CommandCenter() {
   const [svcFilter, setSvcFilter] = useState("All");
   const [repoFilter, setRepoFilter] = useState<"all" | "kova">("kova");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Build unified search index
+  const searchIndex = useMemo((): SearchItem[] => [
+    ...KOVA_WORLDS.map(w => ({ label: w.name, sub: w.description, url: `https://drive.google.com/drive/folders/${w.driveId}`, category: "World", emoji: w.emoji })),
+    ...SERVICES.map(s => ({ label: s.name, sub: s.category, url: s.url, category: "Service" })),
+    ...WIX_SITES.map(s => ({ label: s.name, sub: `Wix · ${s.world}`, url: s.url, category: "Wix" })),
+    ...GITHUB_REPOS.map(r => ({ label: r.name, sub: r.desc, url: r.url, category: "GitHub" })),
+    ...KATY_AI_LINKS.map(a => ({ label: a.name, sub: a.desc, url: a.url, category: "AI", emoji: a.icon })),
+    ...NOTION_WORLD_PAGES.map(n => ({ label: n.name, sub: "Notion page", url: n.url, category: "Notion" })),
+  ], []);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase();
+    return searchIndex.filter(item =>
+      item.label.toLowerCase().includes(q) || item.sub.toLowerCase().includes(q) || item.category.toLowerCase().includes(q)
+    ).slice(0, 12);
+  }, [searchQuery, searchIndex]);
 
   const filteredServices = SERVICES.filter(s => svcFilter === "All" || s.category === svcFilter);
   const filteredRepos = GITHUB_REPOS.filter(r => repoFilter === "all" || r.kova);
 
   return (
     <div className="min-h-screen bg-background pb-16">
+      {/* Global Search Bar */}
+      <div className="sticky top-[57px] z-40 bg-background/95 backdrop-blur border-b border-white/8 px-4 py-3">
+        <div className="max-w-2xl mx-auto relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
+          <input
+            type="text"
+            placeholder="Search worlds, services, repos, Wix sites..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-9 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-500/50 focus:bg-white/8 transition-all"
+          />
+          {searchQuery && (
+            <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        {/* Search Results Dropdown */}
+        {searchResults.length > 0 && (
+          <div className="max-w-2xl mx-auto mt-2 glass-card rounded-xl overflow-hidden border border-white/10 shadow-2xl">
+            {searchResults.map((item, i) => (
+              <a key={i} href={item.url} target="_blank" rel="noopener noreferrer"
+                onClick={() => setSearchQuery("")}
+                className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/8 transition-colors border-b border-white/5 last:border-0 group">
+                <span className="text-sm w-5 text-center flex-shrink-0">{item.emoji || "→"}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm text-white font-medium truncate">{item.label}</div>
+                  <div className="text-[10px] text-zinc-500 truncate">{item.sub}</div>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/6 text-zinc-500 font-mono flex-shrink-0">{item.category}</span>
+                <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 flex-shrink-0" />
+              </a>
+            ))}
+          </div>
+        )}
+        {searchQuery && searchResults.length === 0 && (
+          <div className="max-w-2xl mx-auto mt-2 text-center text-xs text-zinc-600 py-3">No results for "{searchQuery}"</div>
+        )}
+      </div>
+
       {/* Page Header */}
       <div className="relative overflow-hidden border-b border-white/8">
         <div className="absolute inset-0 pointer-events-none">
@@ -342,6 +430,23 @@ export default function CommandCenter() {
               <div key={repo.name} className="animate-fade-up" style={{ animationDelay: `${i * 40}ms`, opacity: 0, animationFillMode: "forwards" }}>
                 <GitHubCard repo={repo} />
               </div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── NOTION WORLD PAGES ── */}
+        <section>
+          <SectionHeader icon={<BookOpen className="w-4 h-4" />} title="Notion World Pages" count={NOTION_WORLD_PAGES.length} />
+          <p className="text-xs text-zinc-500 mb-4">Each world has a dedicated Notion page with Drive links, connected services, and GitHub repos.</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {NOTION_WORLD_PAGES.map((page, i) => (
+              <a key={page.name} href={page.url} target="_blank" rel="noopener noreferrer"
+                className="glass-card p-3 flex items-center gap-2 text-xs font-medium text-zinc-300 hover:text-white hover:border-white/20 transition-all hover:scale-[1.02] animate-fade-up group"
+                style={{ animationDelay: `${i * 30}ms`, opacity: 0, animationFillMode: "forwards" }}>
+                <span className="text-base flex-shrink-0">{page.name.split(" ")[0]}</span>
+                <span className="truncate">{page.name.split(" ").slice(1).join(" ")}</span>
+                <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 ml-auto flex-shrink-0" />
+              </a>
             ))}
           </div>
         </section>
