@@ -4,7 +4,7 @@
  * Full cross-linked control panel: Worlds, Services, Katy AI, GitHub, Wix Sites
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ExternalLink, Github, Globe, Lock, Cpu, FolderOpen, Bot, Zap, ChevronRight, Search, X, BookOpen, Database } from "lucide-react";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
@@ -93,6 +93,173 @@ const KATY_AI_LINKS = [
   { name: "kova-ai-mem0 (GitHub)", desc: "KOVA Life OS Memory Sync Service — connects data sources to mem0", url: "https://github.com/Kathrynhiggs21/kova-ai-mem0", icon: "🧠", status: "dev" },
   { name: "Kova-ai-SYSTEM (GitHub)", desc: "Core Kova AI system repository", url: "https://github.com/Kathrynhiggs21/Kova-ai-SYSTEM", icon: "⚙️", status: "dev" },
 ];
+
+
+// ─── TODAY PANEL ─────────────────────────────────────────────────────────────
+
+type CalendarEvent = { id: string; summary: string; start: { dateTime?: string; date?: string }; htmlLink?: string; location?: string };
+
+function TodayPanel() {
+  const [now] = useState(() => new Date());
+
+  const greeting = useMemo(() => {
+    const h = now.getHours();
+    if (h < 12) return "Good morning";
+    if (h < 17) return "Good afternoon";
+    return "Good evening";
+  }, [now]);
+
+  const todayStr = useMemo(() =>
+    now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
+    [now]
+  );
+
+  const formatTime = (iso: string) => {
+    try {
+      return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+    } catch { return iso; }
+  };
+
+  // Sample upcoming events (shown when live calendar not available)
+  const sampleEvents = [
+    { id: "1", summary: "Open Google Calendar for today's events", start: { dateTime: new Date().toISOString() }, htmlLink: "https://calendar.google.com" },
+  ];
+
+  return (
+    <section>
+      {/* Greeting strip */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="font-display text-2xl font-bold text-white">{greeting}, Katy 👋</h2>
+          <p className="text-zinc-500 text-sm mt-0.5">{todayStr}</p>
+        </div>
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-zinc-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+          Kova OS Live
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* Google Calendar */}
+        <div className="glass-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center">
+                <img src="https://ssl.gstatic.com/images/branding/product/1x/calendar_2020q4_48dp.png" className="w-4 h-4" alt="Calendar" />
+              </div>
+              <span className="font-display font-semibold text-white text-sm">Today's Calendar</span>
+            </div>
+            <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer"
+              className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
+              Open <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          </div>
+          <div className="space-y-2">
+            {sampleEvents.map(ev => (
+              <a key={ev.id} href={ev.htmlLink || "https://calendar.google.com"} target="_blank" rel="noopener noreferrer"
+                className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                <div className="w-1 h-full min-h-[32px] rounded-full bg-blue-500 flex-shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-medium text-white truncate">{ev.summary}</div>
+                  <div className="text-[10px] text-zinc-500 mt-0.5">
+                    {ev.start?.dateTime ? formatTime(ev.start.dateTime) : "All day"}
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+          <div className="mt-3 pt-3 border-t border-white/6">
+            <p className="text-[10px] text-zinc-600">Say "Kova, what's on my calendar today?" for live events.</p>
+          </div>
+        </div>
+
+        {/* Gmail */}
+        <div className="glass-card p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-red-500/20 flex items-center justify-center">
+                <img src="https://ssl.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png" className="w-4 h-4" alt="Gmail" />
+              </div>
+              <span className="font-display font-semibold text-white text-sm">Gmail</span>
+            </div>
+            <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer"
+              className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
+              Open <ExternalLink className="w-2.5 h-2.5" />
+            </a>
+          </div>
+          <div className="space-y-2">
+            {[
+              { label: "Inbox", url: "https://mail.google.com/mail/u/0/#inbox", icon: "📥" },
+              { label: "Unread", url: "https://mail.google.com/mail/u/0/#search/is:unread", icon: "🔴" },
+              { label: "Starred", url: "https://mail.google.com/mail/u/0/#starred", icon: "⭐" },
+              { label: "Sent", url: "https://mail.google.com/mail/u/0/#sent", icon: "📤" },
+              { label: "Drafts", url: "https://mail.google.com/mail/u/0/#drafts", icon: "📝" },
+              { label: "Compose New", url: "https://mail.google.com/mail/u/0/#compose", icon: "✏️" },
+            ].map(item => (
+              <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                <span className="text-sm flex-shrink-0">{item.icon}</span>
+                <span className="text-xs font-medium text-zinc-300 flex-1">{item.label}</span>
+                <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+              </a>
+            ))}
+          </div>
+          <div className="mt-3 pt-3 border-t border-white/6">
+            <p className="text-[10px] text-zinc-600">Say "Kova, summarize my unread emails" for AI inbox management.</p>
+          </div>
+        </div>
+
+        {/* Asana + Quick Commands */}
+        <div className="space-y-3">
+          <div className="glass-card p-5">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-pink-500/20 flex items-center justify-center">
+                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Asana_logo.svg/48px-Asana_logo.svg.png" className="w-4 h-4" alt="Asana" />
+                </div>
+                <span className="font-display font-semibold text-white text-sm">Asana Tasks</span>
+              </div>
+              <a href="https://app.asana.com" target="_blank" rel="noopener noreferrer"
+                className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
+                Open <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            </div>
+            <div className="space-y-2">
+              {[
+                { label: "My Tasks", url: "https://app.asana.com/0/mytasks", icon: "✅" },
+                { label: "Due Today", url: "https://app.asana.com/0/mytasks/list", icon: "🗓️" },
+                { label: "Kova OS Project", url: "https://app.asana.com", icon: "⚡" },
+                { label: "Inbox", url: "https://app.asana.com/0/inbox", icon: "📥" },
+              ].map(item => (
+                <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                  <span className="text-sm flex-shrink-0">{item.icon}</span>
+                  <span className="text-xs font-medium text-zinc-300 flex-1">{item.label}</span>
+                  <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                </a>
+              ))}
+            </div>
+          </div>
+          <div className="glass-card p-4 border-cyan-500/20">
+            <div className="text-xs font-display font-semibold text-white mb-2">⚡ Kova Quick Commands</div>
+            <div className="space-y-1.5">
+              {[
+                "Kova, what's on my calendar today?",
+                "Kova, summarize my unread emails",
+                "Kova, what tasks are due today?",
+                "Kova, add an event to my calendar",
+              ].map(cmd => (
+                <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4 truncate">{cmd}</div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  );
+}
 
 // ─── COMPONENTS ──────────────────────────────────────────────────────────────
 
@@ -338,6 +505,9 @@ export default function CommandCenter() {
       </div>
 
       <div className="container py-8 space-y-12">
+
+        {/* ── TODAY PANEL ── */}
+        <TodayPanel />
 
         {/* ── KOVA WORLDS ── */}
         <section>
