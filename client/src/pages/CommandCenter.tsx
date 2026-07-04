@@ -695,6 +695,147 @@ export default function CommandCenter() {
           </div>
         </section>
 
+        {/* ── SLACK PANEL ── */}
+        <section>
+          <SectionHeader icon={<Globe className="w-4 h-4" />} title="Slack Workspace" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="glass-card p-5 border-purple-500/20">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-purple-500/20 flex items-center justify-center">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/48px-Slack_icon_2019.svg.png" className="w-4 h-4" alt="Slack" />
+                  </div>
+                  <span className="font-display font-semibold text-white text-sm">Slack Channels</span>
+                </div>
+                <a href="https://slack.com" target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
+                  Open <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { label: "Kova OS", desc: "Core AI system channel", icon: "⚡", url: "https://slack.com/app_redirect?channel=kova-os" },
+                  { label: "Scribbles by Marcy", desc: "Publishing & brand updates", icon: "✏️", url: "https://slack.com/app_redirect?channel=scribbles" },
+                  { label: "TAC / Mental Health", desc: "The Anxiety Center projects", icon: "🧠", url: "https://slack.com/app_redirect?channel=tac" },
+                  { label: "Reagan", desc: "Homeschool & activities", icon: "👧", url: "https://slack.com/app_redirect?channel=reagan" },
+                  { label: "All Channels", desc: "Browse all workspace channels", icon: "📋", url: "https://slack.com" },
+                ].map(item => (
+                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                    <span className="text-sm flex-shrink-0">{item.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-zinc-300 truncate">{item.label}</div>
+                      <div className="text-[10px] text-zinc-600 truncate">{item.desc}</div>
+                    </div>
+                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+            <div className="glass-card p-5">
+              <div className="font-display font-semibold text-white text-sm mb-3">⚡ Slack Quick Commands</div>
+              <div className="space-y-1.5 mb-4">
+                {[
+                  "Kova, send a Slack message to #kova-os",
+                  "Kova, search Slack for 'Scribbles launch'",
+                  "Kova, what was discussed in #reagan today?",
+                  "Kova, post an update to #tac",
+                ].map(cmd => (
+                  <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4">{cmd}</div>
+                ))}
+              </div>
+              <div className="pt-3 border-t border-white/6">
+                <p className="text-[10px] text-zinc-600">Manus is fully connected to Slack — send messages, search channels, and read threads by voice or text.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── REAGAN WORLD SUB-HUB ── */}
+        <section>
+          <SectionHeader icon={<Bot className="w-4 h-4" />} title="Reagan World" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Homeschool Dashboard */}
+            <div className="glass-card p-5 border-orange-500/20">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-lg">👧</div>
+                <div>
+                  <div className="font-display font-bold text-white text-sm">Homeschool Dashboard</div>
+                  <div className="text-[10px] text-emerald-400 font-mono">✅ Live on GitHub</div>
+                </div>
+              </div>
+              <p className="text-xs text-zinc-400 mb-3 leading-relaxed">Daily agenda, Adventure of the Day, skill warm-ups, read-alouds, and choice blocks. Kiwi the animated bird companion lives here.</p>
+              <div className="space-y-2">
+                {[
+                  { label: "GitHub Repo", url: "https://github.com/Kathrynhiggs21/reagan_homeschool_dashboard", icon: "🐙" },
+                  { label: "Reagan Drive Folder", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "📁" },
+                  { label: "Reagan Notion Page", url: "https://app.notion.com/p/393ab88660a581049465d2a61bcb7793", icon: "📋" },
+                ].map(item => (
+                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                    <span className="text-sm flex-shrink-0">{item.icon}</span>
+                    <span className="text-xs font-medium text-zinc-300 flex-1">{item.label}</span>
+                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+            {/* Curriculum & Schedule */}
+            <div className="glass-card p-5">
+              <div className="font-display font-semibold text-white text-sm mb-3">📚 Curriculum & Schedule</div>
+              <div className="space-y-2">
+                {[
+                  { label: "Math", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "🔢" },
+                  { label: "Reading & Writing", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "📖" },
+                  { label: "Science", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "🔬" },
+                  { label: "History", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "🏛️" },
+                  { label: "Art & PE", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "🎨" },
+                  { label: "Google Calendar", url: "https://calendar.google.com", icon: "🗓️" },
+                ].map(item => (
+                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                    <span className="text-sm flex-shrink-0">{item.icon}</span>
+                    <span className="text-xs font-medium text-zinc-300 flex-1">{item.label}</span>
+                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+            {/* Pending + Quick Commands */}
+            <div className="space-y-3">
+              <div className="glass-card p-4 border-amber-500/20">
+                <div className="text-xs font-display font-semibold text-white mb-2">⚠️ Pending Tasks</div>
+                <div className="space-y-1.5">
+                  {[
+                    "Create printable PDF daily agenda",
+                    "Organize curriculum worksheets in Drive",
+                    "Set up schedule shift feature",
+                    "Update Kiwi bird behaviors",
+                    "Add fun printable samples",
+                  ].map(task => (
+                    <div key={task} className="flex items-start gap-2 text-[10px] text-zinc-500">
+                      <span className="text-amber-500 flex-shrink-0 mt-0.5">○</span>
+                      {task}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="glass-card p-4 border-cyan-500/20">
+                <div className="text-xs font-display font-semibold text-white mb-2">⚡ Reagan Quick Commands</div>
+                <div className="space-y-1.5">
+                  {[
+                    "Kova, build Reagan's schedule for today",
+                    "Kova, add a math worksheet to Drive",
+                    "Kova, what's on Reagan's calendar?",
+                  ].map(cmd => (
+                    <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4">{cmd}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── QUICK ACTIONS ── */}
         <section>
           <SectionHeader icon={<Zap className="w-4 h-4" />} title="Quick Actions" />
