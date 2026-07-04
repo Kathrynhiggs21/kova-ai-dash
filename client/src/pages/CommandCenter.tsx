@@ -925,15 +925,101 @@ export default function CommandCenter() {
           </div>
         </section>
 
+        {/* ── FINANCE WORLD TRACKER ── */}
+        <section>
+          <SectionHeader icon={<span className="text-sm">💰</span>} title="Finance World" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Scribbles Revenue */}
+            <div className="glass-card p-5 border-emerald-500/20">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-lg">💳</div>
+                <div>
+                  <div className="font-display font-bold text-white text-sm">Scribbles by Marcy LLC</div>
+                  <div className="text-[10px] text-zinc-400 font-mono">Revenue & Payments</div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {[
+                  { label: "Wix Payments Dashboard", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/payments", icon: "💳" },
+                  { label: "Wix Orders", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/store/orders", icon: "📦" },
+                  { label: "Wix Analytics", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/analytics/overview", icon: "📊" },
+                  { label: "Finance Drive Folder", url: "https://drive.google.com", icon: "📁" },
+                  { label: "Financial Workbook v3", url: "https://drive.google.com", icon: "📊" },
+                ].map(item => (
+                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                    <span className="text-sm flex-shrink-0">{item.icon}</span>
+                    <span className="text-xs font-medium text-zinc-300 flex-1 truncate">{item.label}</span>
+                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+            {/* Banking & Tax */}
+            <div className="glass-card p-5">
+              <div className="font-display font-semibold text-white text-sm mb-3">🏦 Banking & Tax</div>
+              <div className="space-y-2">
+                {[
+                  { label: "US Bank Online", url: "https://www.usbank.com/online-banking.html", icon: "🏦" },
+                  { label: "Avalara Tax Portal", url: "https://home.avalara.com", icon: "🧳" },
+                  { label: "IRS Business Portal", url: "https://www.irs.gov/businesses", icon: "📝" },
+                  { label: "Ohio Business Gateway", url: "https://business.ohio.gov", icon: "🏙️" },
+                  { label: "Google Merchant Center", url: "https://merchants.google.com", icon: "🛍️" },
+                ].map(item => (
+                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                    <span className="text-sm flex-shrink-0">{item.icon}</span>
+                    <span className="text-xs font-medium text-zinc-300 flex-1 truncate">{item.label}</span>
+                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+            {/* Pending Finance Tasks + Quick Commands */}
+            <div className="space-y-3">
+              <div className="glass-card p-4 border-amber-500/20">
+                <div className="text-xs font-display font-semibold text-white mb-2">⚠️ Pending Finance Tasks</div>
+                <div className="space-y-1.5">
+                  {[
+                    "Connect US Bank to Wix Payments",
+                    "Set up Avalara sales tax automation",
+                    "Configure Media Mail flat rate shipping",
+                    "Sync Google Merchant Center products",
+                    "Set up quarterly tax reminders",
+                  ].map(task => (
+                    <div key={task} className="flex items-start gap-2 text-[10px] text-zinc-500">
+                      <span className="text-amber-500 flex-shrink-0 mt-0.5">○</span>
+                      {task}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="glass-card p-4 border-emerald-500/20">
+                <div className="text-xs font-display font-semibold text-white mb-2">⚡ Finance Quick Commands</div>
+                <div className="space-y-1.5">
+                  {[
+                    "Kova, show my Scribbles revenue",
+                    "Kova, scan this receipt to Finance folder",
+                    "Kova, create a monthly expense report",
+                    "Kova, check my Wix orders today",
+                  ].map(cmd => (
+                    <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4">{cmd}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── QUICK ACTIONS ── */}
         <section>
           <SectionHeader icon={<Zap className="w-4 h-4" />} title="Quick Actions" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
               { label: "Configure Zapier Actions", desc: "Add automation actions to unlock Zapier", url: "https://mcp.zapier.com/mcp/servers/e8c7456b-6c58-4026-9c3a-1cbec58f4f10/config", urgent: true },
-              { label: "Reconnect Make", desc: "Fix OAuth error in Manus settings", url: "https://manus.im/settings/integrations", urgent: true },
-              { label: "Reconnect Canva", desc: "Fix connection timeout in Manus settings", url: "https://manus.im/settings/integrations", urgent: true },
-              { label: "Set Up DroidMind", desc: "Connect S24 Ultra to Manus via ADB", url: "https://github.com/hyperb1iss/droidmind", urgent: false },
+              { label: "Set Up DroidMind", desc: "Connect S24 Ultra via ADB", url: "https://github.com/hyperb1iss/droidmind", urgent: true },
+              { label: "Open Make Dashboard", desc: "Create an On Demand scenario", url: "https://www.make.com/en/login?source=google", urgent: false },
+              { label: "Open Canva", desc: "Design and export via Google login", url: "https://www.canva.com/login?authMethod=google", urgent: false },
               { label: "Kova OS Notion Dashboard", desc: "Open your live master dashboard", url: "https://www.notion.so/31bab88660a5819db8b5d822aec837f6", urgent: false },
               { label: "GitHub Profile", desc: "View all your repositories", url: "https://github.com/Kathrynhiggs21", urgent: false },
             ].map((action, i) => (

@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import NavLayout from "./components/NavLayout";
 import Home from "./pages/Home";
 import CommandCenter from "./pages/CommandCenter";
+import Commands from "./pages/Commands";
 
 function Router() {
   return (
@@ -14,6 +15,7 @@ function Router() {
       <Switch>
         <Route path={"/"} component={Home} />
         <Route path={"/command-center"} component={CommandCenter} />
+        <Route path={"/commands"} component={Commands} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>

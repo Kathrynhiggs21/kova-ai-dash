@@ -17,6 +17,7 @@ import {
 import {
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
   XCircle,
   Lock,
   ExternalLink,
@@ -32,7 +33,7 @@ import { toast } from "sonner";
 const ORB_IMAGE =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663309818529/KywZHjdnZoy9ZJkeuXSWsQ/kova-hero-orb-b7b4wYvkEusLkjqB2BHk4K.webp";
 
-type Status = "connected" | "needs_action" | "error" | "not_accessible";
+type Status = "connected" | "needs_action" | "error" | "not_accessible" | "warning";
 
 interface Integration {
   id: string;
@@ -156,17 +157,17 @@ const INTEGRATIONS: Integration[] = [
     name: "Make",
     category: "Automation",
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Make_%28software%29_logo.svg/48px-Make_%28software%29_logo.svg.png",
-    status: "error",
-    description: "Visual automation platform. OAuth authentication failed.",
-    actionLabel: "Reconnect Make",
-    actionUrl: "https://manus.im/settings/integrations",
+    status: "warning",
+    description: "Visual automation platform. Create an On Demand scenario to activate.",
+    actionLabel: "Open Make Dashboard",
+    actionUrl: "https://www.make.com/en/login?source=google",
     steps: [
-      "Go to Manus Settings → Integrations.",
-      "Find 'Make' in the list and click 'Disconnect'.",
-      "Click 'Connect' and follow the OAuth flow to re-authenticate.",
-      "Once connected, create an 'On Demand' scenario in Make to enable it here.",
+      "Log in to Make via Google at make.com.",
+      "Click 'Create a new scenario'.",
+      "Set trigger to 'On Demand' (manually run).",
+      "Save and activate — Manus can then trigger it.",
     ],
-    note: "OAuth 404 error — token likely expired. Re-authentication required.",
+    note: "Connected via Google. Create at least one On Demand scenario to unlock automation.",
   },
   // Web / CMS
   {
@@ -183,17 +184,16 @@ const INTEGRATIONS: Integration[] = [
     name: "Canva",
     category: "Web",
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bb/Canva_Logo.svg/48px-Canva_Logo.svg.png",
-    status: "error",
+    status: "warning",
     description: "Design, export, and manage Canva projects.",
-    actionLabel: "Reconnect Canva",
-    actionUrl: "https://manus.im/settings/integrations",
+    actionLabel: "Open Canva",
+    actionUrl: "https://www.canva.com/login?authMethod=google",
     steps: [
-      "Go to Manus Settings → Integrations.",
-      "Find 'Canva' and click 'Disconnect', then 'Connect'.",
-      "Log in to Canva and authorize the integration.",
-      "Return here — status will update to Connected.",
+      "Log in to Canva via Google at canva.com.",
+      "In Manus, say 'Kova, create a design in Canva' to trigger the integration.",
+      "If prompted, re-authorize Canva in Manus Settings → Integrations.",
     ],
-    note: "Connection timeout — likely needs re-authentication.",
+    note: "Connected via Google. If Manus cannot reach Canva, re-authorize in Manus Settings.",
   },
   // Database
   {
@@ -210,17 +210,16 @@ const INTEGRATIONS: Integration[] = [
     name: "Neon",
     category: "Database",
     icon: "https://neon.tech/favicon/favicon-32x32.png",
-    status: "error",
+    status: "warning",
     description: "Serverless Postgres database management.",
-    actionLabel: "Reconnect Neon",
-    actionUrl: "https://manus.im/settings/integrations",
+    actionLabel: "Open Neon Console",
+    actionUrl: "https://console.neon.tech/login?provider=google",
     steps: [
-      "Go to Manus Settings → Integrations.",
-      "Find 'Neon' and click 'Disconnect', then 'Connect'.",
-      "Authorize with your Neon account.",
-      "Return here — status will update to Connected.",
+      "Log in to Neon via Google at console.neon.tech.",
+      "In Manus, say 'Kova, list my Neon projects' to verify connection.",
+      "If Manus cannot reach Neon, re-authorize in Manus Settings → Integrations.",
     ],
-    note: "Connection timeout — re-authentication required.",
+    note: "Connected via Google. Re-authorize in Manus Settings if timeout persists.",
   },
   // Meetings
   {
@@ -228,17 +227,17 @@ const INTEGRATIONS: Integration[] = [
     name: "tl;dv",
     category: "Meetings",
     icon: "https://tldv.io/favicon.ico",
-    status: "error",
+    status: "warning",
     description: "Meeting recording, transcription, and AI-generated highlights.",
-    actionLabel: "Reconnect tl;dv",
-    actionUrl: "https://manus.im/settings/integrations",
+    actionLabel: "Open tl;dv",
+    actionUrl: "https://tldv.io/login?provider=google",
     steps: [
-      "Go to Manus Settings → Integrations.",
-      "Find 'tl;dv' and click 'Disconnect', then 'Connect'.",
-      "Log in with your tl;dv Business or Enterprise account.",
-      "Authorize the integration and return here.",
+      "Log in to tl;dv via Google at tldv.io.",
+      "Ensure you have a Business or Enterprise account active.",
+      "In Manus, say 'Kova, list my tl;dv meetings' to verify connection.",
+      "If Manus cannot reach tl;dv, re-authorize in Manus Settings → Integrations.",
     ],
-    note: "Connection timeout — requires Business or Enterprise account.",
+    note: "Connected via Google. Requires Business or Enterprise account for API access.",
   },
   // Device
   {
@@ -275,6 +274,13 @@ const INTEGRATIONS: Integration[] = [
 const CATEGORIES = ["All", "Google", "Microsoft", "Productivity", "Automation", "Web", "Database", "Meetings", "Device", "Browser"];
 
 const STATUS_CONFIG: Record<Status, { label: string; color: string; icon: React.ReactNode; glowClass: string; dotColor: string }> = {
+  warning: {
+    label: "Connected via Google",
+    color: "text-amber-400",
+    icon: <AlertTriangle className="w-3 h-3" />,
+    glowClass: "glow-warning",
+    dotColor: "bg-amber-400",
+  },
   connected: {
     label: "Connected",
     color: "text-emerald-400",
