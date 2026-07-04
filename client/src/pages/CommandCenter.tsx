@@ -836,6 +836,95 @@ export default function CommandCenter() {
           </div>
         </section>
 
+        {/* ── SCRIBBLES BY MARCY SUB-HUB ── */}
+        <section>
+          <SectionHeader icon={<Globe className="w-4 h-4" />} title="Scribbles by Marcy" />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Brand Hub */}
+            <div className="glass-card p-5 border-pink-500/20">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-lg">✏️</div>
+                <div>
+                  <div className="font-display font-bold text-white text-sm">Scribbles by Marcy LLC</div>
+                  <div className="text-[10px] text-emerald-400 font-mono">✅ Live — scribblesbymarcy.com</div>
+                </div>
+              </div>
+              <p className="text-xs text-zinc-400 mb-3 leading-relaxed">Children's publishing brand. The Scribbleverse universe with Milli, Milton, and the emotional wellness book series.</p>
+              <div className="space-y-2">
+                {[
+                  { label: "Wix Dashboard (Main Site)", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/home", icon: "🌐" },
+                  { label: "Wix Dashboard (Scribbleverse)", url: "https://manage.wix.com/dashboard/105505f4-72ec-48f7-878c-57091688bd1a/home", icon: "🌐" },
+                  { label: "Scribbles Drive Folder", url: "https://drive.google.com/drive/folders/1JJbJjj3Wd9sMFbgqBkh5O3qQqNxpGFMU", icon: "📁" },
+                  { label: "Scribbles Notion Page", url: "https://www.notion.so/31bab88660a5819db8b5d822aec837f6", icon: "📋" },
+                  { label: "GitHub — Scribbles Repos", url: "https://github.com/Kathrynhiggs21?tab=repositories", icon: "🐙" },
+                ].map(item => (
+                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                    <span className="text-sm flex-shrink-0">{item.icon}</span>
+                    <span className="text-xs font-medium text-zinc-300 flex-1 truncate">{item.label}</span>
+                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+            {/* Wix Sites + Marketing */}
+            <div className="glass-card p-5">
+              <div className="font-display font-semibold text-white text-sm mb-3">🛍️ Wix Sites & Marketing</div>
+              <div className="space-y-2">
+                {[
+                  { label: "Store & Products", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/store/products", icon: "🛒" },
+                  { label: "Blog Manager", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/blog", icon: "📝" },
+                  { label: "Email Campaigns", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/email-marketing/home", icon: "📧" },
+                  { label: "Analytics", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/analytics/overview", icon: "📊" },
+                  { label: "Hope 4 Anxiety Site", url: "https://manage.wix.com/dashboard/534d831d-8dc0-46be-bc50-7ed84eff34ea/home", icon: "🧠" },
+                  { label: "TAC for Hope Site", url: "https://manage.wix.com/dashboard/07574d93-4327-44c0-96ca-56ead8415edd/home", icon: "💚" },
+                ].map(item => (
+                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                    <span className="text-sm flex-shrink-0">{item.icon}</span>
+                    <span className="text-xs font-medium text-zinc-300 flex-1 truncate">{item.label}</span>
+                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
+            </div>
+            {/* Pending + Quick Commands */}
+            <div className="space-y-3">
+              <div className="glass-card p-4 border-amber-500/20">
+                <div className="text-xs font-display font-semibold text-white mb-2">⚠️ Pending Tasks</div>
+                <div className="space-y-1.5">
+                  {[
+                    "Connect US Bank to Wix Payments",
+                    "Set up Avalara sales tax automation",
+                    "Configure Media Mail flat rate shipping",
+                    "Sync Google Merchant Center",
+                    "Launch Milton AI chatbot on site",
+                    "Create printable activity downloads",
+                  ].map(task => (
+                    <div key={task} className="flex items-start gap-2 text-[10px] text-zinc-500">
+                      <span className="text-amber-500 flex-shrink-0 mt-0.5">○</span>
+                      {task}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="glass-card p-4 border-pink-500/20">
+                <div className="text-xs font-display font-semibold text-white mb-2">⚡ Scribbles Quick Commands</div>
+                <div className="space-y-1.5">
+                  {[
+                    "Kova, write a Scribbles blog post",
+                    "Kova, update the Wix store product",
+                    "Kova, create a social media post for Scribbles",
+                    "Kova, check Scribbles site analytics",
+                  ].map(cmd => (
+                    <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4">{cmd}</div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── QUICK ACTIONS ── */}
         <section>
           <SectionHeader icon={<Zap className="w-4 h-4" />} title="Quick Actions" />
