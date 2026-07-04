@@ -451,6 +451,80 @@ export default function CommandCenter() {
           </div>
         </section>
 
+        {/* ── ANDROID & SMART HOME ── */}
+        <section>
+          <SectionHeader icon={<Cpu className="w-4 h-4" />} title="Android & Smart Home" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* DroidMind */}
+            <div className="glass-card p-5 border-amber-500/20">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-600 to-orange-600 flex items-center justify-center text-lg">📱</div>
+                <div>
+                  <div className="font-display font-bold text-white text-sm">DroidMind (Primary)</div>
+                  <div className="text-[10px] text-amber-400 font-mono">⚠️ Needs Setup — Most Powerful</div>
+                </div>
+              </div>
+              <p className="text-xs text-zinc-400 mb-3 leading-relaxed">Connects Manus directly to your Samsung Galaxy S24 Ultra via ADB. Enables screenshots, file management, app control, storage optimization, and UI automation.</p>
+              <div className="space-y-1.5 mb-4">
+                {["Enable USB Debugging on S24 Ultra", "Install Python 3.13 + uv + ADB on computer", "Add DroidMind as Custom MCP in Manus Settings"].map((step, i) => (
+                  <div key={i} className="flex items-start gap-2 text-xs text-zinc-400">
+                    <span className="w-4 h-4 rounded-full bg-white/8 flex items-center justify-center text-[9px] font-mono text-zinc-500 flex-shrink-0 mt-0.5">{i + 1}</span>
+                    {step}
+                  </div>
+                ))}
+              </div>
+              <a href="https://github.com/hyperb1iss/droidmind" target="_blank" rel="noopener noreferrer"
+                className="flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 transition-colors">
+                <Github className="w-3.5 h-3.5" /> DroidMind on GitHub <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+            {/* Automate + Smart Home */}
+            <div className="space-y-3">
+              <div className="glass-card p-4 border-blue-500/20">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-lg">🤖</span>
+                  <div>
+                    <div className="font-display font-semibold text-white text-sm">Automate App (Wireless)</div>
+                    <div className="text-[10px] text-amber-400 font-mono">⚠️ Needs Setup</div>
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-400 mb-2">No cable needed. Install Automate, create a webhook flow for SMS/notifications, paste the URL in Manus.</p>
+                <a href="https://play.google.com/store/apps/details?id=com.llamalab.automate" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                  Install Automate on Google Play <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <div className="glass-card p-4 border-emerald-500/20">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-lg">🏠</span>
+                  <div>
+                    <div className="font-display font-semibold text-white text-sm">Smart Home</div>
+                    <div className="text-[10px] text-emerald-400 font-mono">Via Google Assistant</div>
+                  </div>
+                </div>
+                <p className="text-xs text-zinc-400 mb-2">Dyson, smart lights, and all Google Home devices via Google Assistant routines. Say: "Kova, turn up my Dyson."</p>
+                <a href="https://home.google.com" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
+                  Open Google Home <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+              <div className="glass-card p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="text-lg">💾</span>
+                  <div className="font-display font-semibold text-white text-sm">Storage Optimization</div>
+                </div>
+                <p className="text-xs text-zinc-400">Once DroidMind is connected: list apps by storage, find large files, move photos to Drive, clear caches in bulk.</p>
+              </div>
+            </div>
+          </div>
+          <div className="mt-3 glass-card p-3 border-violet-500/20">
+            <a href="https://app.notion.com/p/393ab88660a581c0b34bded1d49c5120" target="_blank" rel="noopener noreferrer"
+              className="flex items-center gap-2 text-xs text-violet-400 hover:text-violet-300 transition-colors">
+              <BookOpen className="w-3.5 h-3.5" /> Full Android Integration Guide in Notion <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
+        </section>
+
         {/* ── QUICK ACTIONS ── */}
         <section>
           <SectionHeader icon={<Zap className="w-4 h-4" />} title="Quick Actions" />
@@ -459,7 +533,7 @@ export default function CommandCenter() {
               { label: "Configure Zapier Actions", desc: "Add automation actions to unlock Zapier", url: "https://mcp.zapier.com/mcp/servers/e8c7456b-6c58-4026-9c3a-1cbec58f4f10/config", urgent: true },
               { label: "Reconnect Make", desc: "Fix OAuth error in Manus settings", url: "https://manus.im/settings/integrations", urgent: true },
               { label: "Reconnect Canva", desc: "Fix connection timeout in Manus settings", url: "https://manus.im/settings/integrations", urgent: true },
-              { label: "Set Up Android", desc: "Install Automate app to link your phone", url: "https://play.google.com/store/apps/details?id=com.llamalab.automate", urgent: false },
+              { label: "Set Up DroidMind", desc: "Connect S24 Ultra to Manus via ADB", url: "https://github.com/hyperb1iss/droidmind", urgent: false },
               { label: "Kova OS Notion Dashboard", desc: "Open your live master dashboard", url: "https://www.notion.so/31bab88660a5819db8b5d822aec837f6", urgent: false },
               { label: "GitHub Profile", desc: "View all your repositories", url: "https://github.com/Kathrynhiggs21", urgent: false },
             ].map((action, i) => (
