@@ -5,7 +5,8 @@
  */
 
 import { useState, useMemo, useEffect } from "react";
-import { ExternalLink, Github, Globe, Lock, Cpu, FolderOpen, Bot, Zap, ChevronRight, Search, X, BookOpen, Database } from "lucide-react";
+import { ExternalLink, Github, Globe, Lock, Cpu, FolderOpen, Bot, Zap, ChevronRight, Search, X, BookOpen, Database, Play, Clock, GraduationCap, Activity } from "lucide-react";
+import { toast } from "sonner";
 
 // ─── DATA ────────────────────────────────────────────────────────────────────
 
@@ -253,6 +254,16 @@ function TodayPanel() {
                 <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4 truncate">{cmd}</div>
               ))}
             </div>
+            <button
+              onClick={() => {
+                toast.success("Morning briefing triggered! Opening Manus to compile your daily summary.", { duration: 4000 });
+                window.open("https://manus.im", "_blank");
+              }}
+              className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-xs font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-lg shadow-violet-500/20"
+            >
+              <Play className="w-3.5 h-3.5" />
+              Run Briefing Now
+            </button>
           </div>
         </div>
 
@@ -1034,6 +1045,128 @@ export default function CommandCenter() {
                 <ExternalLink className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 flex-shrink-0 transition-colors" />
               </a>
             ))}
+          </div>
+                </section>
+
+        {/* ── REAGAN HOMESCHOOL SCHEDULE ── */}
+        <section>
+          <SectionHeader icon={<GraduationCap className="w-4 h-4" />} title="Reagan's Homeschool" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Schedule panel */}
+            <div className="glass-card p-5 md:col-span-2">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">👧</span>
+                  <span className="font-display font-semibold text-white text-sm">Weekly Curriculum Overview</span>
+                </div>
+                <a href="https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu" target="_blank" rel="noopener noreferrer"
+                  className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
+                  Drive <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              </div>
+              <div className="grid grid-cols-5 gap-2 mb-4">
+                {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, i) => (
+                  <div key={day} className="text-center">
+                    <div className={`text-[10px] font-semibold mb-2 ${
+                      new Date().getDay() === i + 1 ? "text-violet-400" : "text-zinc-500"
+                    }`}>{day}</div>
+                    <div className="space-y-1">
+                      {["Math", "Reading", "Science", "Writing"].map(subj => (
+                        <div key={subj} className={`text-[9px] px-1.5 py-1 rounded text-center truncate ${
+                          new Date().getDay() === i + 1
+                            ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                            : "bg-white/4 text-zinc-500"
+                        }`}>{subj}</div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <a href="https://github.com/Kathrynhiggs21/Reagan-App-" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500/15 border border-orange-500/25 text-orange-300 text-xs font-medium hover:bg-orange-500/25 transition-colors">
+                  <Github className="w-3 h-3" /> Reagan App Repo
+                </a>
+                <a href="https://www.notion.so" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/8 border border-white/12 text-zinc-300 text-xs font-medium hover:bg-white/12 transition-colors">
+                  📓 Notion World Page
+                </a>
+                <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/25 text-blue-300 text-xs font-medium hover:bg-blue-500/25 transition-colors">
+                  📅 Reagan's Calendar
+                </a>
+              </div>
+            </div>
+            {/* Quick links panel */}
+            <div className="glass-card p-5">
+              <div className="text-xs font-display font-semibold text-white mb-3">📚 Learning Platforms</div>
+              <div className="space-y-2">
+                {[
+                  { label: "IXL Learning", url: "https://www.ixl.com", icon: "🎯", desc: "Math & ELA practice" },
+                  { label: "Khan Academy", url: "https://www.khanacademy.org", icon: "🏛️", desc: "Free curriculum" },
+                  { label: "Google Classroom", url: "https://classroom.google.com", icon: "🏫", desc: "Assignment hub" },
+                  { label: "YouTube Learning", url: "https://www.youtube.com/education", icon: "▶️", desc: "Video lessons" },
+                  { label: "Reagan's Drive", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "📁", desc: "All Reagan files" },
+                ].map(item => (
+                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
+                    <span className="text-sm flex-shrink-0">{item.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-xs font-medium text-zinc-300 truncate">{item.label}</div>
+                      <div className="text-[10px] text-zinc-600">{item.desc}</div>
+                    </div>
+                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
+                  </a>
+                ))}
+              </div>
+              <div className="mt-3 pt-3 border-t border-white/6">
+                <div className="text-[10px] text-zinc-600 font-mono">Say "Kova, build Reagan's schedule for today"</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── KOVA OS CHANGELOG ── */}
+        <section>
+          <SectionHeader icon={<Activity className="w-4 h-4" />} title="Kova OS Changelog" />
+          <div className="glass-card p-5">
+            <div className="space-y-3">
+              {[
+                { date: "Jul 4, 2026", action: "Built Finance World Tracker, Voice Commands page (/commands), and Scribbles Content Calendar in Notion", type: "build", icon: "⚡" },
+                { date: "Jul 4, 2026", action: "Fixed all 404 reconnect links — Make, Canva, Neon, tl;dv now use direct Google OAuth URLs", type: "fix", icon: "🔧" },
+                { date: "Jul 4, 2026", action: "Scheduled daily briefing — every weekday at 7:30 AM ET", type: "schedule", icon: "⏰" },
+                { date: "Jul 4, 2026", action: "Added Scribbles by Marcy sub-hub to Command Center with 9 Wix site links", type: "build", icon: "✏️" },
+                { date: "Jul 4, 2026", action: "Created 5 new Notion world pages: TAC, Reagan, Katy, Soccer, Kova OS Roadmap", type: "sync", icon: "📓" },
+                { date: "Jul 4, 2026", action: "Installed kova-daily-briefing skill — morning briefing across Calendar, Gmail, Asana, Slack", type: "skill", icon: "🛠️" },
+                { date: "Jul 3, 2026", action: "Added Slack panel and Reagan World sub-hub to Command Center", type: "build", icon: "💬" },
+                { date: "Jul 3, 2026", action: "Built Android & Smart Home section with DroidMind setup guide", type: "build", icon: "📱" },
+                { date: "Jul 3, 2026", action: "Uploaded Kova OS Master Workbook v3 (8 tabs) to Google Drive Documentation folder", type: "sync", icon: "📊" },
+                { date: "Jul 3, 2026", action: "Installed kova-os-sync skill — full reusable sync workflow with scripts and references", type: "skill", icon: "🛠️" },
+                { date: "Jul 3, 2026", action: "Built Today Panel with Calendar, Gmail, Asana, and Kova Quick Commands", type: "build", icon: "🌅" },
+                { date: "Jul 3, 2026", action: "Created Kova OS Master Dashboard in Notion with 15 world pages and integration status", type: "sync", icon: "📓" },
+                { date: "Jul 3, 2026", action: "Synced Google Drive — created 70+ subfolders across all 15 Kova worlds", type: "sync", icon: "📁" },
+                { date: "Jul 3, 2026", action: "Launched Kova OS Integration Hub at kovaintegrate-kywzhjdn.manus.space", type: "launch", icon: "🚀" },
+              ].map((entry, i) => (
+                <div key={i} className="flex items-start gap-3 py-2.5 border-b border-white/5 last:border-0">
+                  <span className="text-base flex-shrink-0 mt-0.5">{entry.icon}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-zinc-300 leading-relaxed">{entry.action}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Clock className="w-2.5 h-2.5 text-zinc-600" />
+                      <span className="text-[10px] text-zinc-600">{entry.date}</span>
+                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
+                        entry.type === "build" ? "bg-violet-500/15 text-violet-400" :
+                        entry.type === "fix" ? "bg-amber-500/15 text-amber-400" :
+                        entry.type === "sync" ? "bg-blue-500/15 text-blue-400" :
+                        entry.type === "skill" ? "bg-emerald-500/15 text-emerald-400" :
+                        entry.type === "launch" ? "bg-fuchsia-500/15 text-fuchsia-400" :
+                        "bg-zinc-500/15 text-zinc-400"
+                      }`}>{entry.type}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
