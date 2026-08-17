@@ -5,7 +5,7 @@
  */
 
 import { Link, useLocation } from "wouter";
-import { Zap, Grid3x3, LayoutDashboard, Mic } from "lucide-react";
+import { Zap, Grid3x3, LayoutDashboard, Mic, FolderOpen } from "lucide-react";
 
 const ORB_IMAGE =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663309818529/KywZHjdnZoy9ZJkeuXSWsQ/kova-hero-orb-b7b4wYvkEusLkjqB2BHk4K.webp";
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { path: "/", label: "Integration Hub", icon: <Grid3x3 className="w-4 h-4" /> },
   { path: "/command-center", label: "Command Center", icon: <LayoutDashboard className="w-4 h-4" /> },
   { path: "/commands", label: "Voice Commands", icon: <Mic className="w-4 h-4" /> },
+  { path: "/storage", label: "Storage Vault", icon: <FolderOpen className="w-4 h-4" /> },
 ];
 
 export default function NavLayout({ children }: { children: React.ReactNode }) {

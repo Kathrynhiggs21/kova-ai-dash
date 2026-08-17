@@ -5,6 +5,7 @@
  */
 
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -498,8 +499,27 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeFilter, setActiveFilter] = useState<"all" | "connected" | "action">("all");
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
+  const {
+    data: persistedIntegrations,
+    isLoading: integrationsLoading,
+    isError: integrationsError,
+  } = trpc.integration.list.useQuery();
+  const integrations: Integration[] = persistedIntegrations?.length
+    ? persistedIntegrations.map(record => ({
+        id: record.id,
+        name: record.name,
+        category: record.category,
+        icon: record.icon,
+        status: record.status as Status,
+        description: record.description,
+        actionLabel: record.actionLabel,
+        actionUrl: record.actionUrl,
+        note: record.note,
+        steps: record.steps,
+      }))
+    : INTEGRATIONS;
 
-  const filtered = INTEGRATIONS.filter((i) => {
+  const filtered = integrations.filter((i) => {
     const catMatch = activeCategory === "All" || i.category === activeCategory;
     const statusMatch =
       activeFilter === "all" ||
@@ -508,11 +528,11 @@ export default function Home() {
     return catMatch && statusMatch;
   });
 
-  const connectedCount = INTEGRATIONS.filter((i) => i.status === "connected").length;
-  const actionCount = INTEGRATIONS.filter(
+  const connectedCount = integrations.filter((i) => i.status === "connected").length;
+  const actionCount = integrations.filter(
     (i) => i.status === "needs_action" || i.status === "error"
   ).length;
-  const total = INTEGRATIONS.length;
+  const total = integrations.length;
   const healthPct = Math.round((connectedCount / total) * 100);
 
   return (
@@ -574,6 +594,16 @@ export default function Home() {
           </div>
         </div>
       </div>
+
+      {(integrationsLoading || integrationsError) && (
+        <div className="container pb-4">
+          <div className={`rounded-xl border px-4 py-3 text-sm ${integrationsError ? "border-amber-400/20 bg-amber-400/5 text-amber-200" : "border-cyan-400/20 bg-cyan-400/5 text-cyan-200"}`}>
+            {integrationsError
+              ? "Live integration data is temporarily unavailable. Showing the curated Kova catalog while the connection is restored."
+              : "Syncing your persisted integration records…"}
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-white/8">
