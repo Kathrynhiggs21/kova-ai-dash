@@ -30,9 +30,7 @@ import {
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
-
-const ORB_IMAGE =
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663309818529/KywZHjdnZoy9ZJkeuXSWsQ/kova-hero-orb-b7b4wYvkEusLkjqB2BHk4K.webp";
+import { KovaOrb, KOVA_ORB_VOICE_STATES, type KovaOrbVoiceState } from "@/components/KovaOrb";
 
 type Status = "connected" | "needs_action" | "error" | "not_accessible" | "warning";
 
@@ -274,6 +272,14 @@ const INTEGRATIONS: Integration[] = [
 
 const CATEGORIES = ["All", "Google", "Microsoft", "Productivity", "Automation", "Web", "Database", "Meetings", "Device", "Browser"];
 
+function getInitialVoiceState(): KovaOrbVoiceState {
+  if (typeof window === "undefined") return "idle";
+  const candidate = new URLSearchParams(window.location.search).get("orbState");
+  return KOVA_ORB_VOICE_STATES.includes(candidate as KovaOrbVoiceState)
+    ? (candidate as KovaOrbVoiceState)
+    : "idle";
+}
+
 const STATUS_CONFIG: Record<Status, { label: string; color: string; icon: React.ReactNode; glowClass: string; dotColor: string }> = {
   warning: {
     label: "Connected via Google",
@@ -499,6 +505,7 @@ export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All");
   const [activeFilter, setActiveFilter] = useState<"all" | "connected" | "action">("all");
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
+  const [voiceState, setVoiceState] = useState<KovaOrbVoiceState>(getInitialVoiceState);
   const {
     data: persistedIntegrations,
     isLoading: integrationsLoading,
@@ -550,16 +557,31 @@ export default function Home() {
         </div>
 
         <div className="relative container py-16 flex flex-col items-center text-center gap-6">
-          {/* Orb image */}
-          <div className="animate-orb-float">
-            <img
-              src={ORB_IMAGE}
-              alt="Kova OS Orb"
-              className="w-36 h-36 object-cover rounded-full"
-              style={{
-                boxShadow: "0 0 60px oklch(0.65 0.28 320 / 40%), 0 0 120px oklch(0.72 0.20 195 / 20%)",
-              }}
-            />
+          {/* Reflective orb */}
+          <KovaOrb voiceState={voiceState} />
+          <div className="flex flex-col items-center gap-2" aria-label="Voice motion preview">
+            <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-500">
+              <span>Voice motion</span>
+              <span className="text-cyan-300">{voiceState}</span>
+            </div>
+            <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/20 p-1 backdrop-blur-md">
+              {KOVA_ORB_VOICE_STATES.map(state => (
+                <button
+                  key={state}
+                  type="button"
+                  aria-pressed={voiceState === state}
+                  onClick={() => setVoiceState(state)}
+                  className={`rounded-full px-2.5 py-1 text-[10px] capitalize transition-all duration-200 ${
+                    voiceState === state
+                      ? "bg-white/15 text-white shadow-[0_0_18px_rgba(105,211,255,0.18)]"
+                      : "text-zinc-500 hover:bg-white/8 hover:text-zinc-200"
+                  }`}
+                >
+                  {state}
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-zinc-600">Click a state to preview Kova’s voice movement. Microphone access is never opened automatically.</p>
           </div>
 
           <div>

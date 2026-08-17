@@ -209,3 +209,165 @@
 .animate-fade-up {
   animation: fadeUp 0.5s ease-out forwards;
 }
+
+/* Kova reflective orb */
+@keyframes kovaOrbDrift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-2deg); }
+  50% { transform: translate3d(0, -10px, 0) rotate(2deg); }
+}
+
+@keyframes kovaOrbListening {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -14px, 0) scale(1.035); }
+}
+
+@keyframes kovaOrbProcessing {
+  0% { transform: rotate(0deg) scale(1); }
+  50% { transform: rotate(180deg) scale(1.04); }
+  100% { transform: rotate(360deg) scale(1); }
+}
+
+@keyframes kovaOrbSpeaking {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  25% { transform: translate3d(0, -8px, 0) scale(1.025); }
+  50% { transform: translate3d(0, 2px, 0) scale(0.99); }
+  75% { transform: translate3d(0, -5px, 0) scale(1.018); }
+}
+
+@keyframes kovaOrbHalo {
+  0%, 100% { opacity: 0.36; transform: scale(0.88); }
+  50% { opacity: 0.68; transform: scale(1.06); }
+}
+
+@keyframes kovaOrbRipple {
+  0% { opacity: 0.55; transform: translateX(-50%) scale(0.72); }
+  70%, 100% { opacity: 0; transform: translateX(-50%) scale(1.18); }
+}
+
+@keyframes kovaOrbParticle {
+  0%, 100% { opacity: 0.25; transform: rotate(var(--particle-angle)) translateY(calc(var(--particle-distance) * 0.84)) scale(0.7); }
+  50% { opacity: 0.95; transform: rotate(var(--particle-angle)) translateY(var(--particle-distance)) scale(1); }
+}
+
+.kova-orb {
+  --orb-size: 196px;
+  --orb-shadow: 0 22px 80px oklch(0.62 0.28 320 / 38%), 0 0 130px oklch(0.72 0.2 195 / 25%);
+  position: relative;
+  width: var(--orb-size);
+  height: calc(var(--orb-size) + 54px);
+  isolation: isolate;
+}
+
+.kova-orb--compact {
+  --orb-size: 126px;
+  height: calc(var(--orb-size) + 36px);
+}
+
+.kova-orb__halo,
+.kova-orb__core,
+.kova-orb__surface,
+.kova-orb__ripple,
+.kova-orb__particles {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.kova-orb__halo {
+  top: 6%;
+  width: 92%;
+  aspect-ratio: 1;
+  border-radius: 999px;
+  background: radial-gradient(circle, oklch(0.74 0.24 320 / 50%), oklch(0.72 0.2 195 / 22%) 42%, transparent 72%);
+  filter: blur(18px);
+  animation: kovaOrbHalo 4.6s ease-in-out infinite;
+  z-index: -2;
+}
+
+.kova-orb__core {
+  top: 0;
+  width: var(--orb-size);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  overflow: hidden;
+  box-shadow: var(--orb-shadow);
+  animation: kovaOrbDrift 7.5s cubic-bezier(0.23, 1, 0.32, 1) infinite;
+  z-index: 2;
+}
+
+.kova-orb__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  mix-blend-mode: screen;
+}
+
+.kova-orb__surface {
+  bottom: 17px;
+  width: 86%;
+  height: 26%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, oklch(0.7 0.22 320 / 35%), oklch(0.7 0.18 195 / 18%) 35%, transparent 72%);
+  filter: blur(6px);
+  transform: translateX(-50%) perspective(90px) rotateX(62deg);
+  opacity: 0.82;
+  z-index: 1;
+}
+
+.kova-orb__ripple {
+  bottom: 11px;
+  width: 74%;
+  height: 18%;
+  border: 1px solid oklch(0.78 0.2 195 / 26%);
+  border-radius: 50%;
+  filter: blur(0.3px);
+  transform-origin: center;
+  animation: kovaOrbRipple 4.2s ease-out infinite;
+  z-index: 1;
+}
+
+.kova-orb__ripple--two {
+  width: 52%;
+  bottom: 18px;
+  border-color: oklch(0.78 0.24 320 / 22%);
+  animation-delay: 1.5s;
+}
+
+.kova-orb__particles {
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.kova-orb__particle {
+  position: absolute;
+  top: 38%;
+  left: 50%;
+  width: var(--particle-size);
+  height: var(--particle-size);
+  border-radius: 999px;
+  background: linear-gradient(135deg, oklch(0.9 0.16 195), oklch(0.78 0.25 320));
+  box-shadow: 0 0 10px oklch(0.78 0.22 195 / 68%);
+  animation: kovaOrbParticle 3.8s ease-in-out var(--particle-delay) infinite;
+}
+
+.kova-orb--listening .kova-orb__core { animation: kovaOrbListening 1.8s ease-in-out infinite; }
+.kova-orb--listening .kova-orb__halo { animation-duration: 1.8s; }
+.kova-orb--processing .kova-orb__core { animation: kovaOrbProcessing 4.2s linear infinite; }
+.kova-orb--processing .kova-orb__particles { animation: kovaOrbProcessing 8s linear infinite reverse; }
+.kova-orb--speaking .kova-orb__core { animation: kovaOrbSpeaking 1.15s ease-in-out infinite; }
+.kova-orb--speaking .kova-orb__ripple { animation-duration: 1.25s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .kova-orb__core,
+  .kova-orb__halo,
+  .kova-orb__particle,
+  .kova-orb__ripple,
+  .kova-orb--listening .kova-orb__core,
+  .kova-orb--processing .kova-orb__core,
+  .kova-orb--processing .kova-orb__particles,
+  .kova-orb--speaking .kova-orb__core {
+    animation: none;
+  }
+}
