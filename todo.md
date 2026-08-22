@@ -20,7 +20,7 @@
 - [x] Refine orb idle, listening, speaking, and processing motion states
 - [x] Add reduced-motion handling for the revised orb animation
 - [x] Verify the orb asset, voice motion, typecheck, tests, and production build
-- [ ] Save a checkpoint for the orb and motion update
+- [x] Save a checkpoint for the orb and motion update
 - [x] Add focused unit coverage for the orb asset path and voice-state API
 - [x] Wire KovaOrb to real UI state so listening, processing, and speaking variants can appear in the app
 - [x] Add a small in-app voice-state control/demo without auto-opening microphone access

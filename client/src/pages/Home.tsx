@@ -592,6 +592,9 @@ export default function Home() {
             <h1 className="font-display text-4xl sm:text-5xl font-bold text-white tracking-tight mb-3">
               Your Connected Universe
             </h1>
+            <h2 className="text-xl text-cyan-400 font-medium mb-3">
+              Unified Integration Management and Voice Control System
+            </h2>
             <p className="text-zinc-400 text-lg max-w-xl mx-auto leading-relaxed">
               Every service, every account, every world — managed from one place.
             </p>

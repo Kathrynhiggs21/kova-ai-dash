@@ -53,7 +53,7 @@ export function KovaOrb({ voiceState = "idle", size = "hero", className = "" }: 
         ))}
       </div>
       <div className="kova-orb__core">
-        <img src={KOVA_ORB_IMAGE} alt="" className="kova-orb__image" />
+        <img src={KOVA_ORB_IMAGE} alt="Kova OS iridescent reflective AI voice orb" className="kova-orb__image" />
       </div>
       <div className="kova-orb__surface" aria-hidden="true" />
       <div className="kova-orb__ripple kova-orb__ripple--one" aria-hidden="true" />
