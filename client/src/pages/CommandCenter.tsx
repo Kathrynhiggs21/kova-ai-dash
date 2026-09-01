@@ -21,13 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-
-type RecordedStatus =
-  | "connected"
-  | "needs_action"
-  | "error"
-  | "not_accessible"
-  | "warning";
+import type { IntegrationStatus } from "@shared/defaultIntegrations";
 
 const SAFE_LAUNCHERS = [
   {
@@ -104,7 +98,21 @@ const SAFE_LAUNCHERS = [
   },
 ] as const;
 
-const STATUS_STYLES: Record<RecordedStatus, string> = {
+const INTEGRATION_STATUSES: readonly IntegrationStatus[] = [
+  "connected",
+  "needs_action",
+  "error",
+  "not_accessible",
+  "warning",
+];
+
+function normalizeIntegrationStatus(status: string): IntegrationStatus {
+  return INTEGRATION_STATUSES.includes(status as IntegrationStatus)
+    ? (status as IntegrationStatus)
+    : "warning";
+}
+
+const STATUS_STYLES: Record<IntegrationStatus, string> = {
   connected: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
   needs_action: "border-amber-500/25 bg-amber-500/10 text-amber-300",
   warning: "border-amber-500/25 bg-amber-500/10 text-amber-300",
@@ -112,7 +120,7 @@ const STATUS_STYLES: Record<RecordedStatus, string> = {
   not_accessible: "border-zinc-500/25 bg-zinc-500/10 text-zinc-400",
 };
 
-const STATUS_LABELS: Record<RecordedStatus, string> = {
+const STATUS_LABELS: Record<IntegrationStatus, string> = {
   connected: "Recorded connected",
   needs_action: "Recorded action needed",
   warning: "Recorded warning",
@@ -292,11 +300,11 @@ export default function CommandCenter() {
                               {integration.name}
                             </h4>
                             <span
-                              className={`mt-1 inline-flex rounded-full border px-2 py-0.5 text-[10px] ${STATUS_STYLES[integration.status as RecordedStatus]}`}
+                              className={`mt-1 inline-flex rounded-full border px-2 py-0.5 text-[10px] ${STATUS_STYLES[normalizeIntegrationStatus(integration.status)]}`}
                             >
                               {
                                 STATUS_LABELS[
-                                  integration.status as RecordedStatus
+                                  normalizeIntegrationStatus(integration.status)
                                 ]
                               }
                             </span>

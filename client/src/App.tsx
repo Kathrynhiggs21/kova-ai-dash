@@ -19,14 +19,38 @@ function ProtectedCommandCenter() {
   );
 }
 
+function ProtectedHome() {
+  return (
+    <ProtectedRoute>
+      <Home />
+    </ProtectedRoute>
+  );
+}
+
+function ProtectedCommands() {
+  return (
+    <ProtectedRoute>
+      <Commands />
+    </ProtectedRoute>
+  );
+}
+
+function ProtectedStorageVault() {
+  return (
+    <ProtectedRoute>
+      <StorageVault />
+    </ProtectedRoute>
+  );
+}
+
 function Router() {
   return (
     <NavLayout>
       <Switch>
-        <Route path={"/"} component={Home} />
+        <Route path={"/"} component={ProtectedHome} />
         <Route path={"/command-center"} component={ProtectedCommandCenter} />
-        <Route path={"/commands"} component={Commands} />
-        <Route path={"/storage"} component={StorageVault} />
+        <Route path={"/commands"} component={ProtectedCommands} />
+        <Route path={"/storage"} component={ProtectedStorageVault} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>

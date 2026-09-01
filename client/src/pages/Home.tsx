@@ -30,9 +30,18 @@ import {
   Check,
 } from "lucide-react";
 import { toast } from "sonner";
-import { KovaOrb, KOVA_ORB_VOICE_STATES, type KovaOrbVoiceState } from "@/components/KovaOrb";
+import {
+  KovaOrb,
+  KOVA_ORB_VOICE_STATES,
+  type KovaOrbVoiceState,
+} from "@/components/KovaOrb";
 
-type Status = "connected" | "needs_action" | "error" | "not_accessible" | "warning";
+type Status =
+  | "connected"
+  | "needs_action"
+  | "error"
+  | "not_accessible"
+  | "warning";
 
 interface Integration {
   id: string;
@@ -55,7 +64,8 @@ const INTEGRATIONS: Integration[] = [
     category: "Google",
     icon: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png",
     status: "connected",
-    description: "Full file & folder management across all 15 Kova worlds.",
+    description:
+      "Recorded Google Drive file and folder management configuration.",
     note: "Connected via native gws CLI — no action needed.",
   },
   {
@@ -102,7 +112,8 @@ const INTEGRATIONS: Integration[] = [
     category: "Productivity",
     icon: "https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png",
     status: "connected",
-    description: "Create and update pages, manage databases, build your Kova OS dashboard.",
+    description:
+      "Create and update pages, manage databases, build your Kova OS dashboard.",
     note: "Connected via MCP — Kova OS Master Dashboard is live.",
   },
   {
@@ -120,7 +131,8 @@ const INTEGRATIONS: Integration[] = [
     category: "Productivity",
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/48px-Slack_icon_2019.svg.png",
     status: "connected",
-    description: "Send messages, search channels, read threads, create canvases.",
+    description:
+      "Send messages, search channels, read threads, create canvases.",
     note: "Connected via MCP — fully operational.",
   },
   {
@@ -139,11 +151,12 @@ const INTEGRATIONS: Integration[] = [
     category: "Automation",
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Zapier_logo.svg/48px-Zapier_logo.svg.png",
     status: "needs_action",
-    description: "Automate workflows between apps. Connected but needs actions configured.",
+    description:
+      "Automate workflows between apps. Connected but needs actions configured.",
     actionLabel: "Configure Zapier Actions",
     actionUrl: "https://mcp.zapier.com",
     steps: [
-      "Click 'Configure Zapier Actions' to open your Zapier MCP settings.",
+      "Open Zapier MCP and select the server you want to configure.",
       "Log in to Zapier if prompted.",
       "Click 'Add Action' and choose any app you want Manus to control (e.g., Gmail, Sheets, Airtable).",
       "Configure the action (e.g., 'Create a new row in Google Sheets').",
@@ -157,7 +170,8 @@ const INTEGRATIONS: Integration[] = [
     category: "Automation",
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Make_%28software%29_logo.svg/48px-Make_%28software%29_logo.svg.png",
     status: "warning",
-    description: "Visual automation platform. Create an On Demand scenario to activate.",
+    description:
+      "Visual automation platform. Create an On Demand scenario to activate.",
     actionLabel: "Open Make Dashboard",
     actionUrl: "https://www.make.com/en/login?source=google",
     steps: [
@@ -176,7 +190,7 @@ const INTEGRATIONS: Integration[] = [
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Wix.com_website_logo.svg/48px-Wix.com_website_logo.svg.png",
     status: "connected",
     description: "Manage authenticated Wix sites and publishing projects.",
-    note: "Reconnected Mar 6 2026 — 14 sites detected.",
+    note: "Saved Wix configuration record; live site access is not verified.",
   },
   {
     id: "canva",
@@ -201,7 +215,8 @@ const INTEGRATIONS: Integration[] = [
     category: "Database",
     icon: "https://seeklogo.com/images/S/supabase-logo-DCC676FFE2-seeklogo.com.png",
     status: "connected",
-    description: "Manage Supabase database projects, run queries, handle migrations.",
+    description:
+      "Manage Supabase database projects, run queries, handle migrations.",
     note: "Connected via MCP — fully operational.",
   },
   {
@@ -227,7 +242,8 @@ const INTEGRATIONS: Integration[] = [
     category: "Meetings",
     icon: "https://tldv.io/favicon.ico",
     status: "warning",
-    description: "Meeting recording, transcription, and AI-generated highlights.",
+    description:
+      "Meeting recording, transcription, and AI-generated highlights.",
     actionLabel: "Open tl;dv",
     actionUrl: "https://tldv.io/login?provider=google",
     steps: [
@@ -245,9 +261,11 @@ const INTEGRATIONS: Integration[] = [
     category: "Device",
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Android_logo_2019_%28stacked%29.svg/48px-Android_logo_2019_%28stacked%29.svg.png",
     status: "needs_action",
-    description: "Access SMS, contacts, files, and notifications from your Android phone.",
+    description:
+      "Access SMS, contacts, files, and notifications from your Android phone.",
     actionLabel: "Set Up Android",
-    actionUrl: "https://play.google.com/store/apps/details?id=com.llamalab.automate",
+    actionUrl:
+      "https://play.google.com/store/apps/details?id=com.llamalab.automate",
     steps: [
       "Install the free 'Automate' app from Google Play Store.",
       "Open Automate and create a new Flow.",
@@ -265,12 +283,24 @@ const INTEGRATIONS: Integration[] = [
     category: "Browser",
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/Google_Chrome_icon_%28February_2022%29.svg/48px-Google_Chrome_icon_%28February_2022%29.svg.png",
     status: "not_accessible",
-    description: "Local browser history cannot be accessed for privacy/security reasons.",
+    description:
+      "Local browser history cannot be accessed for privacy/security reasons.",
     note: "Use the Web Capture skill to save any page to Kova OS manually.",
   },
 ];
 
-const CATEGORIES = ["All", "Google", "Microsoft", "Productivity", "Automation", "Web", "Database", "Meetings", "Device", "Browser"];
+const CATEGORIES = [
+  "All",
+  "Google",
+  "Microsoft",
+  "Productivity",
+  "Automation",
+  "Web",
+  "Database",
+  "Meetings",
+  "Device",
+  "Browser",
+];
 
 function getInitialVoiceState(): KovaOrbVoiceState {
   if (typeof window === "undefined") return "idle";
@@ -280,37 +310,46 @@ function getInitialVoiceState(): KovaOrbVoiceState {
     : "idle";
 }
 
-const STATUS_CONFIG: Record<Status, { label: string; color: string; icon: React.ReactNode; glowClass: string; dotColor: string }> = {
+const STATUS_CONFIG: Record<
+  Status,
+  {
+    label: string;
+    color: string;
+    icon: React.ReactNode;
+    glowClass: string;
+    dotColor: string;
+  }
+> = {
   warning: {
-    label: "Connected via Google",
+    label: "Recorded warning",
     color: "text-amber-400",
     icon: <AlertTriangle className="w-3 h-3" />,
     glowClass: "glow-warning",
     dotColor: "bg-amber-400",
   },
   connected: {
-    label: "Connected",
+    label: "Recorded connected",
     color: "text-emerald-400",
     icon: <CheckCircle2 className="w-4 h-4" />,
     glowClass: "glow-connected",
     dotColor: "bg-emerald-400",
   },
   needs_action: {
-    label: "Needs Setup",
+    label: "Recorded setup needed",
     color: "text-amber-400",
     icon: <AlertCircle className="w-4 h-4" />,
     glowClass: "glow-action",
     dotColor: "bg-amber-400",
   },
   error: {
-    label: "Reconnect",
+    label: "Recorded error",
     color: "text-red-400",
     icon: <XCircle className="w-4 h-4" />,
     glowClass: "glow-error",
     dotColor: "bg-red-400",
   },
   not_accessible: {
-    label: "Not Accessible",
+    label: "Recorded unavailable",
     color: "text-zinc-500",
     icon: <Lock className="w-4 h-4" />,
     glowClass: "glow-muted",
@@ -321,7 +360,9 @@ const STATUS_CONFIG: Record<Status, { label: string; color: string; icon: React.
 function StatusBadge({ status }: { status: Status }) {
   const cfg = STATUS_CONFIG[status];
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-medium ${cfg.color}`}>
+    <span
+      className={`inline-flex items-center gap-1.5 text-xs font-medium ${cfg.color}`}
+    >
       <span
         className={`w-2 h-2 rounded-full ${cfg.dotColor} ${status === "needs_action" || status === "error" ? "animate-status-pulse" : ""}`}
       />
@@ -340,12 +381,18 @@ function IntegrationCard({
   onSelect: (i: Integration) => void;
 }) {
   const cfg = STATUS_CONFIG[integration.status];
-  const isActionable = integration.status !== "connected" && integration.status !== "not_accessible";
+  const isActionable =
+    integration.status !== "connected" &&
+    integration.status !== "not_accessible";
 
   return (
     <div
       className={`glass-card ${cfg.glowClass} p-5 flex flex-col gap-3 transition-all duration-300 hover:scale-[1.02] hover:brightness-110 animate-fade-up`}
-      style={{ animationDelay: `${delay}ms`, opacity: 0, animationFillMode: "forwards" }}
+      style={{
+        animationDelay: `${delay}ms`,
+        opacity: 0,
+        animationFillMode: "forwards",
+      }}
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -354,7 +401,7 @@ function IntegrationCard({
               src={integration.icon}
               alt={integration.name}
               className="w-6 h-6 object-contain"
-              onError={(e) => {
+              onError={e => {
                 (e.target as HTMLImageElement).style.display = "none";
               }}
             />
@@ -363,13 +410,17 @@ function IntegrationCard({
             <h3 className="font-display font-semibold text-sm text-white leading-tight">
               {integration.name}
             </h3>
-            <span className="text-xs text-zinc-500">{integration.category}</span>
+            <span className="text-xs text-zinc-500">
+              {integration.category}
+            </span>
           </div>
         </div>
         <StatusBadge status={integration.status} />
       </div>
 
-      <p className="text-xs text-zinc-400 leading-relaxed line-clamp-2">{integration.description}</p>
+      <p className="text-xs text-zinc-400 leading-relaxed line-clamp-2">
+        {integration.description}
+      </p>
 
       {isActionable && (
         <Button
@@ -389,7 +440,7 @@ function IntegrationCard({
       {integration.status === "connected" && (
         <div className="mt-auto text-xs text-emerald-400/70 flex items-center gap-1">
           <CheckCircle2 className="w-3 h-3" />
-          <span>{integration.note?.split("—")[0]?.trim() || "Operational"}</span>
+          <span>Recorded connected · live check pending</span>
         </div>
       )}
     </div>
@@ -429,7 +480,7 @@ function ActionDrawer({
                 src={integration.icon}
                 alt={integration.name}
                 className="w-7 h-7 object-contain"
-                onError={(e) => {
+                onError={e => {
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
@@ -449,7 +500,9 @@ function ActionDrawer({
         <div className="space-y-6">
           {integration.note && (
             <div className="rounded-lg bg-white/5 border border-white/8 p-4">
-              <p className="text-sm text-zinc-300 leading-relaxed">{integration.note}</p>
+              <p className="text-sm text-zinc-300 leading-relaxed">
+                {integration.note}
+              </p>
             </div>
           )}
 
@@ -482,7 +535,11 @@ function ActionDrawer({
                   onClick={handleCopy}
                   className="flex-shrink-0 text-zinc-400 hover:text-white transition-colors"
                 >
-                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  {copied ? (
+                    <Check className="w-4 h-4 text-emerald-400" />
+                  ) : (
+                    <Copy className="w-4 h-4" />
+                  )}
                 </button>
               </div>
 
@@ -503,9 +560,13 @@ function ActionDrawer({
 
 export default function Home() {
   const [activeCategory, setActiveCategory] = useState("All");
-  const [activeFilter, setActiveFilter] = useState<"all" | "connected" | "action">("all");
-  const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null);
-  const [voiceState, setVoiceState] = useState<KovaOrbVoiceState>(getInitialVoiceState);
+  const [activeFilter, setActiveFilter] = useState<
+    "all" | "connected" | "action"
+  >("all");
+  const [selectedIntegration, setSelectedIntegration] =
+    useState<Integration | null>(null);
+  const [voiceState, setVoiceState] =
+    useState<KovaOrbVoiceState>(getInitialVoiceState);
   const {
     data: persistedIntegrations,
     isLoading: integrationsLoading,
@@ -526,18 +587,21 @@ export default function Home() {
       }))
     : INTEGRATIONS;
 
-  const filtered = integrations.filter((i) => {
+  const filtered = integrations.filter(i => {
     const catMatch = activeCategory === "All" || i.category === activeCategory;
     const statusMatch =
       activeFilter === "all" ||
       (activeFilter === "connected" && i.status === "connected") ||
-      (activeFilter === "action" && (i.status === "needs_action" || i.status === "error"));
+      (activeFilter === "action" &&
+        (i.status === "needs_action" || i.status === "error"));
     return catMatch && statusMatch;
   });
 
-  const connectedCount = integrations.filter((i) => i.status === "connected").length;
+  const connectedCount = integrations.filter(
+    i => i.status === "connected"
+  ).length;
   const actionCount = integrations.filter(
-    (i) => i.status === "needs_action" || i.status === "error"
+    i => i.status === "needs_action" || i.status === "error"
   ).length;
   const total = integrations.length;
   const healthPct = Math.round((connectedCount / total) * 100);
@@ -551,7 +615,8 @@ export default function Home() {
           <div
             className="w-[600px] h-[600px] rounded-full opacity-20 blur-3xl animate-orb-pulse"
             style={{
-              background: "radial-gradient(circle, oklch(0.65 0.28 320) 0%, oklch(0.72 0.20 195) 50%, transparent 70%)",
+              background:
+                "radial-gradient(circle, oklch(0.65 0.28 320) 0%, oklch(0.72 0.20 195) 50%, transparent 70%)",
             }}
           />
         </div>
@@ -559,7 +624,10 @@ export default function Home() {
         <div className="relative container py-16 flex flex-col items-center text-center gap-6">
           {/* Reflective orb */}
           <KovaOrb voiceState={voiceState} />
-          <div className="flex flex-col items-center gap-2" aria-label="Voice motion preview">
+          <div
+            className="flex flex-col items-center gap-2"
+            aria-label="Voice motion preview"
+          >
             <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-[0.18em] text-zinc-500">
               <span>Voice motion</span>
               <span className="text-cyan-300">{voiceState}</span>
@@ -581,7 +649,10 @@ export default function Home() {
                 </button>
               ))}
             </div>
-            <p className="text-[10px] text-zinc-600">Click a state to preview Kova’s voice movement. Microphone access is never opened automatically.</p>
+            <p className="text-[10px] text-zinc-600">
+              Click a state to preview Kova’s voice movement. Microphone access
+              is never opened automatically.
+            </p>
           </div>
 
           <div>
@@ -596,15 +667,18 @@ export default function Home() {
               Unified Integration Management and Voice Control System
             </h2>
             <p className="text-zinc-400 text-lg max-w-xl mx-auto leading-relaxed">
-              Every service, every account, every world — managed from one place.
+              Review saved integration records and launch provider-level setup
+              flows from one private workspace.
             </p>
           </div>
 
           {/* Health bar */}
           <div className="w-full max-w-sm glass-card p-4 flex flex-col gap-2">
             <div className="flex justify-between text-xs text-zinc-400 font-mono">
-              <span>System Health</span>
-              <span className="text-white font-semibold">{connectedCount}/{total} Connected</span>
+              <span>Recorded Setup State</span>
+              <span className="text-white font-semibold">
+                {connectedCount}/{total} recorded connected
+              </span>
             </div>
             <div className="h-2 rounded-full bg-white/10 overflow-hidden">
               <div
@@ -613,8 +687,12 @@ export default function Home() {
               />
             </div>
             <div className="flex gap-4 text-xs">
-              <span className="text-emerald-400">{connectedCount} connected</span>
-              <span className="text-amber-400">{actionCount} need attention</span>
+              <span className="text-emerald-400">
+                {connectedCount} recorded connected
+              </span>
+              <span className="text-amber-400">
+                {actionCount} recorded action items
+              </span>
             </div>
           </div>
         </div>
@@ -622,20 +700,30 @@ export default function Home() {
 
       {(integrationsLoading || integrationsError) && (
         <div className="container pb-4">
-          <div className={`rounded-xl border px-4 py-3 text-sm ${integrationsError ? "border-amber-400/20 bg-amber-400/5 text-amber-200" : "border-cyan-400/20 bg-cyan-400/5 text-cyan-200"}`}>
+          <div
+            className={`rounded-xl border px-4 py-3 text-sm ${integrationsError ? "border-amber-400/20 bg-amber-400/5 text-amber-200" : "border-cyan-400/20 bg-cyan-400/5 text-cyan-200"}`}
+          >
             {integrationsError
-              ? "Live integration data is temporarily unavailable. Showing the curated Kova catalog while the connection is restored."
+              ? "Persisted integration records are unavailable. Showing the recorded setup catalog; no live health is implied."
               : "Syncing your persisted integration records…"}
           </div>
         </div>
       )}
+
+      <div className="container pb-4">
+        <div className="rounded-xl border border-amber-400/20 bg-amber-400/5 px-4 py-3 text-sm text-amber-200">
+          Statuses are saved configuration records, not live connector probes.
+          Treat them as verified only after an evidence-backed health check
+          records a timestamp.
+        </div>
+      </div>
 
       {/* Filters */}
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-white/8">
         <div className="container py-3 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
           {/* Status filter */}
           <div className="flex gap-2">
-            {(["all", "connected", "action"] as const).map((f) => (
+            {(["all", "connected", "action"] as const).map(f => (
               <button
                 key={f}
                 onClick={() => setActiveFilter(f)}
@@ -645,14 +733,18 @@ export default function Home() {
                     : "text-zinc-500 hover:text-zinc-300"
                 }`}
               >
-                {f === "all" ? "All" : f === "connected" ? "✓ Connected" : "⚠ Action Required"}
+                {f === "all"
+                  ? "All"
+                  : f === "connected"
+                    ? "✓ Connected"
+                    : "⚠ Action Required"}
               </button>
             ))}
           </div>
 
           {/* Category filter */}
           <div className="flex gap-1.5 flex-wrap">
-            {CATEGORIES.map((cat) => (
+            {CATEGORIES.map(cat => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
