@@ -1,8 +1,8 @@
 export const COOKIE_NAME = "app_session_id";
 export const ONE_YEAR_MS = 1000 * 60 * 60 * 24 * 365;
 export const AXIOS_TIMEOUT_MS = 30_000;
-export const UNAUTHED_ERR_MSG = 'Please login (10001)';
-export const NOT_ADMIN_ERR_MSG = 'You do not have required permission (10002)';
+export const UNAUTHED_ERR_MSG = "Please login (10001)";
+export const NOT_ADMIN_ERR_MSG = "You do not have required permission (10002)";
 
 // One-time nonce cookie that binds an OAuth login to the browser that started
 // it. The `__Host-` prefix forces the cookie host-only (Secure, Path=/, no
@@ -12,7 +12,60 @@ export const OAUTH_STATE_COOKIE = "__Host-oauth_state";
 
 // `state` carries the callback redirect URI (used at token exchange) plus the
 // CSRF nonce. Defined here so the client encoder and server decoder never drift.
-export type OAuthState = { redirectUri: string; nonce?: string };
+export type OAuthState = {
+  redirectUri: string;
+  nonce?: string;
+  returnTo?: string;
+};
+
+const OAUTH_RETURN_ORIGIN = "https://kova.invalid";
+
+/**
+ * Accept only an application-relative OAuth return path. This prevents state
+ * tampering from turning the callback into an open redirect.
+ */
+export const sanitizeOAuthReturnPath = (value?: unknown): string => {
+  if (
+    typeof value !== "string" ||
+    !value ||
+    value.length > 2_048 ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    /[\\\u0000-\u001f\u007f]/.test(value)
+  ) {
+    return "/";
+  }
+
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(value);
+  } catch {
+    return "/";
+  }
+  if (
+    !decoded.startsWith("/") ||
+    decoded.startsWith("//") ||
+    /[\\\u0000-\u001f\u007f]/.test(decoded)
+  ) {
+    return "/";
+  }
+
+  try {
+    const parsed = new URL(value, OAUTH_RETURN_ORIGIN);
+    if (parsed.origin !== OAUTH_RETURN_ORIGIN) return "/";
+    const normalized = `${parsed.pathname}${parsed.search}`;
+    if (
+      !normalized.startsWith("/") ||
+      normalized.startsWith("//") ||
+      /[\\\u0000-\u001f\u007f]/.test(normalized)
+    ) {
+      return "/";
+    }
+    return normalized;
+  } catch {
+    return "/";
+  }
+};
 
 export const encodeOAuthState = (state: OAuthState): string =>
   btoa(JSON.stringify(state));

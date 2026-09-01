@@ -3,21 +3,54 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
+import ProtectedRoute from "./components/ProtectedRoute";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import NavLayout from "./components/NavLayout";
 import Home from "./pages/Home";
 import CommandCenter from "./pages/CommandCenter";
 import Commands from "./pages/Commands";
 import StorageVault from "./pages/StorageVault";
+
+function ProtectedCommandCenter() {
+  return (
+    <ProtectedRoute>
+      <CommandCenter />
+    </ProtectedRoute>
+  );
+}
+
+function ProtectedHome() {
+  return (
+    <ProtectedRoute>
+      <Home />
+    </ProtectedRoute>
+  );
+}
+
+function ProtectedCommands() {
+  return (
+    <ProtectedRoute>
+      <Commands />
+    </ProtectedRoute>
+  );
+}
+
+function ProtectedStorageVault() {
+  return (
+    <ProtectedRoute>
+      <StorageVault />
+    </ProtectedRoute>
+  );
+}
+
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <NavLayout>
       <Switch>
-        <Route path={"/"} component={Home} />
-        <Route path={"/command-center"} component={CommandCenter} />
-        <Route path={"/commands"} component={Commands} />
-        <Route path={"/storage"} component={StorageVault} />
+        <Route path={"/"} component={ProtectedHome} />
+        <Route path={"/command-center"} component={ProtectedCommandCenter} />
+        <Route path={"/commands"} component={ProtectedCommands} />
+        <Route path={"/storage"} component={ProtectedStorageVault} />
         <Route path={"/404"} component={NotFound} />
         <Route component={NotFound} />
       </Switch>
