@@ -53,7 +53,15 @@ export const sanitizeOAuthReturnPath = (value?: unknown): string => {
   try {
     const parsed = new URL(value, OAUTH_RETURN_ORIGIN);
     if (parsed.origin !== OAUTH_RETURN_ORIGIN) return "/";
-    return `${parsed.pathname}${parsed.search}`;
+    const normalized = `${parsed.pathname}${parsed.search}`;
+    if (
+      !normalized.startsWith("/") ||
+      normalized.startsWith("//") ||
+      /[\\\u0000-\u001f\u007f]/.test(normalized)
+    ) {
+      return "/";
+    }
+    return normalized;
   } catch {
     return "/";
   }

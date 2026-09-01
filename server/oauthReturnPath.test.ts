@@ -28,8 +28,19 @@ describe("OAuth return path", () => {
     "/%2f%2fattacker.example/path",
     "/%5c%5cattacker.example/path",
     "/%0d%0aLocation:%20https://attacker.example",
+    "/%2e%2e//attacker.example",
+    "/%2E%2E//attacker.example",
+    "/.//attacker.example",
+    "/..//attacker.example",
+    "/%2e//attacker.example",
   ])("rejects unsafe return target %s", target => {
     expect(sanitizeOAuthReturnPath(target)).toBe("/");
+  });
+
+  it("keeps a safe path after dot-segment normalization", () => {
+    expect(
+      sanitizeOAuthReturnPath("/folder/../command-center?tab=integrations")
+    ).toBe("/command-center?tab=integrations");
   });
 
   it("falls back when no return target was recorded", () => {
