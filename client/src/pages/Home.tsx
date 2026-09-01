@@ -141,7 +141,7 @@ const INTEGRATIONS: Integration[] = [
     status: "needs_action",
     description: "Automate workflows between apps. Connected but needs actions configured.",
     actionLabel: "Configure Zapier Actions",
-    actionUrl: "https://mcp.zapier.com/mcp/servers/e8c7456b-6c58-4026-9c3a-1cbec58f4f10/config",
+    actionUrl: "https://mcp.zapier.com",
     steps: [
       "Click 'Configure Zapier Actions' to open your Zapier MCP settings.",
       "Log in to Zapier if prompted.",
@@ -175,7 +175,7 @@ const INTEGRATIONS: Integration[] = [
     category: "Web",
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Wix.com_website_logo.svg/48px-Wix.com_website_logo.svg.png",
     status: "connected",
-    description: "Manage all your Wix sites: Scribbles by Marcy, Hope 4 Anxiety, katyandblake, Fite Club, and more.",
+    description: "Manage authenticated Wix sites and publishing projects.",
     note: "Reconnected Mar 6 2026 — 14 sites detected.",
   },
   {

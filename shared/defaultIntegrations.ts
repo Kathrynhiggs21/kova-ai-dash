@@ -108,7 +108,7 @@ export const DEFAULT_INTEGRATIONS: DefaultIntegration[] = [
     status: "needs_action",
     description: "Automate workflows between apps. Connected but needs actions configured.",
     actionLabel: "Configure Zapier Actions",
-    actionUrl: "https://mcp.zapier.com/mcp/servers/e8c7456b-6c58-4026-9c3a-1cbec58f4f10/config",
+    actionUrl: "https://mcp.zapier.com",
     steps: [
       "Click 'Configure Zapier Actions' to open your Zapier MCP settings.",
       "Log in to Zapier if prompted.",

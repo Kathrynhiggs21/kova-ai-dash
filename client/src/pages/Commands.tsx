@@ -58,28 +58,8 @@ const COMMANDS: Command[] = [
   { phrase: "Kova, what are my Asana tasks", description: "List all open tasks assigned to you", category: "Asana", world: "All Worlds" },
   { phrase: "Kova, mark [task] complete in Asana", description: "Complete a specific Asana task", category: "Asana", world: "All Worlds" },
 
-  // Scribbles by Marcy
-  { phrase: "Kova, show my Scribbles revenue", description: "Pull Wix Payments dashboard summary", category: "Scribbles", world: "Scribbles" },
-  { phrase: "Kova, check my Wix orders today", description: "List recent Scribbles store orders", category: "Scribbles", world: "Scribbles" },
-  { phrase: "Kova, generate a blog post for Scribbles", description: "Create AI content for Scribbles by Marcy blog", category: "Scribbles", world: "Scribbles" },
-  { phrase: "Kova, scan this receipt to Finance folder", description: "Use financial scanner to log a receipt", category: "Scribbles", world: "Scribbles" },
-  { phrase: "Kova, create a marketing flyer for Scribbles", description: "Generate a branded marketing material", category: "Scribbles", world: "Scribbles" },
-  { phrase: "Kova, update the Scribbles Wix site", description: "Make changes to the Scribbles by Marcy website", category: "Scribbles", world: "Scribbles" },
-  { phrase: "Kova, create a monthly expense report", description: "Generate a Scribbles LLC expense summary", category: "Scribbles", world: "Scribbles" },
-
-  // Reagan
-  { phrase: "Kova, open Reagan's dashboard", description: "Navigate to Reagan's Homeschool Dashboard", category: "Reagan", world: "Reagan" },
-  { phrase: "Kova, add to Reagan's curriculum", description: "Add a new subject or activity to Reagan's homeschool plan", category: "Reagan", world: "Reagan" },
-  { phrase: "Kova, what's Reagan doing today", description: "Pull Reagan's schedule and activities for today", category: "Reagan", world: "Reagan" },
-  { phrase: "Kova, save this to Reagan's folder", description: "Upload a file to Reagan's Google Drive world", category: "Reagan", world: "Reagan" },
-
-  // TAC / Mental Health
-  { phrase: "Kova, open TAC for Hope", description: "Get links to TAC and Hope 4 Anxiety resources", category: "TAC", world: "TAC" },
-  { phrase: "Kova, update the Hope 4 Anxiety site", description: "Make changes to the Hope 4 Anxiety Wix site", category: "TAC", world: "TAC" },
-  { phrase: "Kova, save this to TAC folder", description: "Upload a file to The Anxiety Center Drive world", category: "TAC", world: "TAC" },
-
   // Android / Device
-  { phrase: "Kova, connect to my phone", description: "Initiate DroidMind or Automate connection to S24 Ultra", category: "Android", world: "All Worlds" },
+  { phrase: "Kova, connect to my phone", description: "Initiate the configured Android automation connection", category: "Android", world: "All Worlds" },
   { phrase: "Kova, what's using storage on my phone", description: "Run storage analysis on Android device", category: "Android", world: "All Worlds" },
   { phrase: "Kova, read my SMS messages", description: "Pull recent SMS via Android integration", category: "Android", world: "All Worlds" },
   { phrase: "Kova, send a text to [name]", description: "Send an SMS via Android device integration", category: "Android", world: "All Worlds" },
@@ -100,10 +80,10 @@ const COMMANDS: Command[] = [
   { phrase: "Kova, open the Integration Hub", description: "Get the link to kovaintegrate-kywzhjdn.manus.space", category: "Kova OS", world: "All Worlds" },
   { phrase: "Kova, create a new skill", description: "Build a new reusable Kova OS skill", category: "Kova OS", world: "All Worlds" },
   { phrase: "Kova, what skills do you have", description: "List all installed Kova OS skills", category: "Kova OS", world: "All Worlds" },
-  { phrase: "Kova, update my personal profile", description: "Update the katy-ai-assistant personal profile", category: "Kova OS", world: "All Worlds" },
+  { phrase: "Kova, update my assistant preferences", description: "Update the authenticated Kova OS preference profile", category: "Kova OS", world: "All Worlds" },
 ];
 
-const CATEGORIES = ["All", "Daily Briefing", "Files & Drive", "Gmail", "Calendar", "Slack", "Notion", "Asana", "Scribbles", "Reagan", "TAC", "Android", "Finance", "GitHub", "Kova OS"];
+const CATEGORIES = ["All", "Daily Briefing", "Files & Drive", "Gmail", "Calendar", "Slack", "Notion", "Asana", "Android", "Finance", "GitHub", "Kova OS"];
 
 export default function Commands() {
   const [search, setSearch] = useState("");

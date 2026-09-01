@@ -1,1176 +1,336 @@
 /*
  * KOVA OS COMMAND CENTER
- * Design: Premium SaaS Dark Dashboard — Liquid Orb Edition
- * Full cross-linked control panel: Worlds, Services, Katy AI, GitHub, Wix Sites
+ *
+ * Privacy boundary: this client module contains provider-level launch links
+ * only. User-specific folders, page IDs, site IDs, family data, and private
+ * project mappings must come from an authenticated server procedure rather
+ * than being embedded in the browser bundle.
  */
 
-import { useState, useMemo, useEffect } from "react";
-import { ExternalLink, Github, Globe, Lock, Cpu, FolderOpen, Bot, Zap, ChevronRight, Search, X, BookOpen, Database, Play, Clock, GraduationCap, Activity } from "lucide-react";
-import { toast } from "sonner";
+import { useMemo } from "react";
+import {
+  Activity,
+  ExternalLink,
+  FolderOpen,
+  Github,
+  LayoutDashboard,
+  LockKeyhole,
+  RefreshCw,
+  Server,
+  ShieldCheck,
+  Zap,
+} from "lucide-react";
+import { trpc } from "@/lib/trpc";
 
-// ─── DATA ────────────────────────────────────────────────────────────────────
+type RecordedStatus =
+  | "connected"
+  | "needs_action"
+  | "error"
+  | "not_accessible"
+  | "warning";
 
-// ─── SEARCH INDEX ────────────────────────────────────────────────────────────
-// All searchable items across the hub
-type SearchItem = { label: string; sub: string; url: string; category: string; emoji?: string };
+const SAFE_LAUNCHERS = [
+  {
+    name: "Google Drive",
+    description: "Open your Drive home",
+    url: "https://drive.google.com",
+    icon: "📁",
+  },
+  {
+    name: "Gmail",
+    description: "Open your inbox",
+    url: "https://mail.google.com",
+    icon: "✉️",
+  },
+  {
+    name: "Google Calendar",
+    description: "Open your calendar",
+    url: "https://calendar.google.com",
+    icon: "📅",
+  },
+  {
+    name: "Notion",
+    description: "Open your Notion workspace",
+    url: "https://www.notion.so",
+    icon: "◼️",
+  },
+  {
+    name: "Asana",
+    description: "Open your task workspace",
+    url: "https://app.asana.com",
+    icon: "✅",
+  },
+  {
+    name: "Slack",
+    description: "Open your Slack workspace",
+    url: "https://app.slack.com",
+    icon: "💬",
+  },
+  {
+    name: "GitHub",
+    description: "Open GitHub",
+    url: "https://github.com",
+    icon: "🐙",
+  },
+  {
+    name: "Wix",
+    description: "Open your sites dashboard",
+    url: "https://manage.wix.com",
+    icon: "🌐",
+  },
+  {
+    name: "ChatGPT",
+    description: "Open ChatGPT",
+    url: "https://chatgpt.com",
+    icon: "✨",
+  },
+  {
+    name: "Claude",
+    description: "Open Claude",
+    url: "https://claude.ai",
+    icon: "🧬",
+  },
+  {
+    name: "Gemini",
+    description: "Open Gemini",
+    url: "https://gemini.google.com",
+    icon: "💎",
+  },
+  {
+    name: "Manus",
+    description: "Open Manus",
+    url: "https://manus.im",
+    icon: "🤖",
+  },
+] as const;
 
-const KOVA_WORLDS = [
-  { name: "Kova OS", emoji: "🖥️", color: "from-violet-600 to-cyan-600", driveId: "1w-e10-QcWBglQRm4N1L5Lh09w4ZPvwFp", description: "Core OS — tech, AI, business, dev", tags: ["Manus", "GitHub", "Drive"] },
-  { name: "AI World", emoji: "🤖", color: "from-cyan-600 to-blue-600", driveId: "1YPv6ysA9rGstmh39tYrJM7igI1o4Sb-o", description: "All AI platforms & interactions", tags: ["Manus", "ChatGPT", "Claude"] },
-  { name: "The Anxiety Center", emoji: "🧠", color: "from-teal-600 to-emerald-600", driveId: "1G2xWiTvftR1FxjDK85x2jxZuGPA3SzV7", description: "Coaching projects & resources", tags: ["Wix", "Drive", "Notion"] },
-  { name: "Scribbles by Marcy", emoji: "✏️", color: "from-pink-600 to-rose-600", driveId: "1xSWCf_FT2fIwM_21WC-0QT1WPVe1w0ND", description: "Book & website project", tags: ["Wix", "Drive"] },
-  { name: "Reagan", emoji: "👧", color: "from-orange-500 to-amber-500", driveId: "16rshT309izimpnv_gEO9BMwaXosO7Nmu", description: "Everything Reagan (non-coaching)", tags: ["Drive", "GitHub"] },
-  { name: "Katy", emoji: "🌸", color: "from-fuchsia-600 to-pink-600", driveId: "1rScei7lzBExaYdVz2GQd9-f171pERj-B", description: "Personal health, identity & growth", tags: ["Wix", "Drive"] },
-  { name: "Dojo", emoji: "🏠", color: "from-stone-600 to-zinc-600", driveId: "1t19H1tMYlylO3L6yqnnlepTiOqTm9JTX", description: "House, property & home base", tags: ["Drive"] },
-  { name: "Pets", emoji: "🐾", color: "from-yellow-600 to-orange-500", driveId: "1EbfbPA50h0W0T-IMP5f2Nz2f5Y1gLbX8", description: "All animal companions", tags: ["Drive"] },
-  { name: "Travel", emoji: "✈️", color: "from-sky-600 to-blue-600", driveId: "1ZQLZsVp9pzD0puv8YqkYozyabBZJ63hn", description: "Adventures & trip planning", tags: ["Drive", "Calendar"] },
-  { name: "Photos", emoji: "📸", color: "from-indigo-600 to-violet-600", driveId: "1drTNF68XAT1QPrM5uBFL-CjMuQO-zV8W", description: "Organized photo library", tags: ["Drive"] },
-  { name: "Soccer (Turpin)", emoji: "⚽", color: "from-green-600 to-emerald-600", driveId: "1Vz5HEq9OMEZYR0JucI-4ClQ9EKNHiN8V", description: "Coaching world", tags: ["Drive", "Asana"] },
-  { name: "Household Collective", emoji: "🏘️", color: "from-amber-600 to-yellow-500", driveId: "1sTsahy7Mx9K8gXl8migE6kC2NJuMLy3Z", description: "Household projects", tags: ["Drive"] },
-  { name: "Apps", emoji: "📱", color: "from-blue-600 to-indigo-600", driveId: "1TyIfbpw6eVVJLJRo7Nh_tdo4V15FPRDT", description: "App content & integrations", tags: ["Slack", "Notion", "Zapier"] },
-  { name: "Vault", emoji: "🔐", color: "from-zinc-700 to-zinc-600", driveId: "1FU7YTFCqO81URaGj5ufj097BaNjHpItf", description: "Sensitive & important info", tags: ["Drive"] },
-  { name: "Inbox", emoji: "📥", color: "from-slate-600 to-zinc-600", driveId: "1MWnLkOlpxk88k4IxkEwDmVMpM2PJ7rEr", description: "Catch-all before filing", tags: ["Gmail", "Outlook"] },
-];
+const STATUS_STYLES: Record<RecordedStatus, string> = {
+  connected: "border-emerald-500/25 bg-emerald-500/10 text-emerald-300",
+  needs_action: "border-amber-500/25 bg-amber-500/10 text-amber-300",
+  warning: "border-amber-500/25 bg-amber-500/10 text-amber-300",
+  error: "border-rose-500/25 bg-rose-500/10 text-rose-300",
+  not_accessible: "border-zinc-500/25 bg-zinc-500/10 text-zinc-400",
+};
 
-const SERVICES = [
-  { name: "Gmail", icon: "https://ssl.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png", url: "https://mail.google.com", category: "Google", color: "text-red-400" },
-  { name: "Google Drive", icon: "https://ssl.gstatic.com/images/branding/product/1x/drive_2020q4_48dp.png", url: "https://drive.google.com", category: "Google", color: "text-yellow-400" },
-  { name: "Google Calendar", icon: "https://ssl.gstatic.com/images/branding/product/1x/calendar_2020q4_48dp.png", url: "https://calendar.google.com", category: "Google", color: "text-blue-400" },
-  { name: "Outlook Mail", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg/48px-Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg.png", url: "https://outlook.live.com/mail", category: "Microsoft", color: "text-blue-400" },
-  { name: "Outlook Calendar", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg/48px-Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg.png", url: "https://outlook.live.com/calendar", category: "Microsoft", color: "text-blue-400" },
-  { name: "Notion", icon: "https://upload.wikimedia.org/wikipedia/commons/4/45/Notion_app_logo.png", url: "https://www.notion.so/31bab88660a5819db8b5d822aec837f6", category: "Productivity", color: "text-white" },
-  { name: "Asana", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Asana_logo.svg/48px-Asana_logo.svg.png", url: "https://app.asana.com", category: "Productivity", color: "text-pink-400" },
-  { name: "Slack", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/48px-Slack_icon_2019.svg.png", url: "https://slack.com", category: "Productivity", color: "text-purple-400" },
-  { name: "HubSpot", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/HubSpot_Logo.svg/48px-HubSpot_Logo.svg.png", url: "https://app.hubspot.com", category: "Productivity", color: "text-orange-400" },
-  { name: "Supabase", icon: "https://seeklogo.com/images/S/supabase-logo-DCC676FFE2-seeklogo.com.png", url: "https://app.supabase.com", category: "Database", color: "text-emerald-400" },
-  { name: "Zapier", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Zapier_logo.svg/48px-Zapier_logo.svg.png", url: "https://mcp.zapier.com/mcp/servers/e8c7456b-6c58-4026-9c3a-1cbec58f4f10/config", category: "Automation", color: "text-orange-400" },
-  { name: "Manus AI", icon: "https://manus.im/favicon.ico", url: "https://manus.im", category: "AI", color: "text-cyan-400" },
-  { name: "ChatGPT", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/ChatGPT_logo.svg/48px-ChatGPT_logo.svg.png", url: "https://chat.openai.com", category: "AI", color: "text-emerald-400" },
-  { name: "Claude", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Claude_AI_logo.svg/48px-Claude_AI_logo.svg.png", url: "https://claude.ai", category: "AI", color: "text-amber-400" },
-  { name: "Gemini", icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Google_Gemini_logo.svg/48px-Google_Gemini_logo.svg.png", url: "https://gemini.google.com", category: "AI", color: "text-blue-400" },
-];
-
-const WIX_SITES = [
-  { name: "Scribbles by Marcy", id: "db4a6aef-9fa8-4569-a5d0-c43b9a491eb4", world: "Scribbles by Marcy", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/home" },
-  { name: "Hope 4 Anxiety", id: "534d831d-8dc0-46be-bc50-7ed84eff34ea", world: "The Anxiety Center", url: "https://manage.wix.com/dashboard/534d831d-8dc0-46be-bc50-7ed84eff34ea/home" },
-  { name: "Hope For Anxiety", id: "07574d93-4327-44c0-96ca-56ead8415edd", world: "The Anxiety Center", url: "https://manage.wix.com/dashboard/07574d93-4327-44c0-96ca-56ead8415edd/home" },
-  { name: "katyandblake", id: "ed17432b-e2a7-4e83-a52a-0816c901f012", world: "Katy", url: "https://manage.wix.com/dashboard/ed17432b-e2a7-4e83-a52a-0816c901f012/home" },
-  { name: "Fite Club", id: "f1c2265c-0841-4c7f-b85c-68ba7b70c80d", world: "Apps", url: "https://manage.wix.com/dashboard/f1c2265c-0841-4c7f-b85c-68ba7b70c80d/home" },
-  { name: "My Site 1", id: "43441871-c511-4dc0-b967-0dbb3dfc6e24", world: "Inbox", url: "https://manage.wix.com/dashboard/43441871-c511-4dc0-b967-0dbb3dfc6e24/home" },
-  { name: "My Site 10", id: "40068e30-0ad5-4f12-b651-7a4b3d5af14d", world: "Inbox", url: "https://manage.wix.com/dashboard/40068e30-0ad5-4f12-b651-7a4b3d5af14d/home" },
-  { name: "My Site 13", id: "8f2eafa2-25c9-424e-9511-49dc7339b856", world: "Inbox", url: "https://manage.wix.com/dashboard/8f2eafa2-25c9-424e-9511-49dc7339b856/home" },
-  { name: "Mysite", id: "661d62ba-f5b3-4b24-b590-3652de1e16e5", world: "Inbox", url: "https://manage.wix.com/dashboard/661d62ba-f5b3-4b24-b590-3652de1e16e5/home" },
-];
-
-const GITHUB_REPOS = [
-  { name: "kovaos-site", url: "https://github.com/Kathrynhiggs21/kovaos-site", desc: "Your personal operations system", private: true, updated: "2026-01-27", kova: true },
-  { name: "Kova-ai-SYSTEM", url: "https://github.com/Kathrynhiggs21/Kova-ai-SYSTEM", desc: "Kova AI System", private: false, updated: "2025-12-18", kova: true },
-  { name: "kova-ai", url: "https://github.com/Kathrynhiggs21/kova-ai", desc: "Kova AI", private: false, updated: "2025-10-20", kova: true },
-  { name: "kova-ai-mem0", url: "https://github.com/Kathrynhiggs21/kova-ai-mem0", desc: "KOVA Life OS Memory Sync Service", private: false, updated: "2025-10-20", kova: true },
-  { name: "kova-ai-site", url: "https://github.com/Kathrynhiggs21/kova-ai-site", desc: "Kova AI site", private: false, updated: "2025-08-26", kova: true },
-  { name: "Kova-os-docengine", url: "https://github.com/Kathrynhiggs21/Kova-os-docengine", desc: "Kova OS doc engine", private: false, updated: "2025-12-09", kova: true },
-  { name: "mem0", url: "https://github.com/Kathrynhiggs21/mem0", desc: "KOVA Life OS Memory Sync", private: true, updated: "2025-08-27", kova: true },
-  { name: "TheCenterApp", url: "https://github.com/Kathrynhiggs21/TheCenterApp", desc: "The Center App", private: true, updated: "2025-04-22", kova: false },
-  { name: "theCenter-App", url: "https://github.com/Kathrynhiggs21/theCenter-App", desc: "The Center App", private: false, updated: "2025-04-08", kova: false },
-  { name: "theCenter", url: "https://github.com/Kathrynhiggs21/theCenter", desc: "The Center", private: true, updated: "2025-04-08", kova: false },
-  { name: "TheCenter-7d530", url: "https://github.com/Kathrynhiggs21/TheCenter-7d530", desc: "The Center (Netlify)", private: false, updated: "2025-06-01", kova: false },
-  { name: "netlify-thecenter", url: "https://github.com/Kathrynhiggs21/netlify-thecenter", desc: "Netlify The Center", private: false, updated: "2025-04-22", kova: false },
-  { name: "Reagan-App-", url: "https://github.com/Kathrynhiggs21/Reagan-App-", desc: "Reagan App", private: false, updated: "2025-10-20", kova: false },
-  { name: "wix-commerce-ticketing-nextjs-template", url: "https://github.com/Kathrynhiggs21/wix-commerce-ticketing-nextjs-template", desc: "Wix commerce template", private: true, updated: "2025-08-20", kova: false },
-  { name: "headless-templates", url: "https://github.com/Kathrynhiggs21/headless-templates", desc: "Headless templates", private: false, updated: "2025-04-01", kova: false },
-  { name: "platforms-starter-kit", url: "https://github.com/Kathrynhiggs21/platforms-starter-kit", desc: "Platforms starter kit", private: true, updated: "2025-10-06", kova: false },
-  { name: "Kova-AI-Scribbles", url: "https://github.com/Kathrynhiggs21/Kova-AI-Scribbles", desc: "Kova AI Scribbles", private: false, updated: "2025-10-20", kova: true },
-];
-
-const KATY_AI_LINKS = [
-  { name: "Manus AI", desc: "Your primary AI — fully connected to Kova OS", url: "https://manus.im", icon: "🤖", status: "active" },
-  { name: "Kova OS Master Dashboard (Notion)", desc: "Live dashboard with all worlds, integrations & skills", url: "https://www.notion.so/31bab88660a5819db8b5d822aec837f6", icon: "📊", status: "active" },
-  { name: "Skills Registry (Notion)", desc: "All 36 Manus skills installed for Kova OS", url: "https://app.notion.com/p/38eab88660a581b79ce4f1da4ade23d3", icon: "🛠️", status: "active" },
-  { name: "GitHub Index (Notion)", desc: "All 30 repos indexed and linked", url: "https://app.notion.com/p/38eab88660a5815089f3d6332ec04f9e", icon: "🐙", status: "active" },
-  { name: "Integration Status (Notion)", desc: "Live connection status for all services", url: "https://app.notion.com/p/38eab88660a581158fd3d08fa6cf7506", icon: "🔌", status: "active" },
-  { name: "ChatGPT", desc: "OpenAI assistant — history not synced to Kova", url: "https://chat.openai.com", icon: "💬", status: "partial" },
-  { name: "Claude (Anthropic)", desc: "Anthropic assistant — history not synced to Kova", url: "https://claude.ai", icon: "🧬", status: "partial" },
-  { name: "Google Gemini", desc: "Google AI assistant", url: "https://gemini.google.com", icon: "✨", status: "partial" },
-  { name: "kova-ai-mem0 (GitHub)", desc: "KOVA Life OS Memory Sync Service — connects data sources to mem0", url: "https://github.com/Kathrynhiggs21/kova-ai-mem0", icon: "🧠", status: "dev" },
-  { name: "Kova-ai-SYSTEM (GitHub)", desc: "Core Kova AI system repository", url: "https://github.com/Kathrynhiggs21/Kova-ai-SYSTEM", icon: "⚙️", status: "dev" },
-];
-
-
-// ─── TODAY PANEL ─────────────────────────────────────────────────────────────
-
-type CalendarEvent = { id: string; summary: string; start: { dateTime?: string; date?: string }; htmlLink?: string; location?: string };
-
-function TodayPanel() {
-  const [now] = useState(() => new Date());
-
-  const greeting = useMemo(() => {
-    const h = now.getHours();
-    if (h < 12) return "Good morning";
-    if (h < 17) return "Good afternoon";
-    return "Good evening";
-  }, [now]);
-
-  const todayStr = useMemo(() =>
-    now.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" }),
-    [now]
-  );
-
-  const formatTime = (iso: string) => {
-    try {
-      return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-    } catch { return iso; }
-  };
-
-  // Sample upcoming events (shown when live calendar not available)
-  const sampleEvents = [
-    { id: "1", summary: "Open Google Calendar for today's events", start: { dateTime: new Date().toISOString() }, htmlLink: "https://calendar.google.com" },
-  ];
-
-  return (
-    <section>
-      {/* Greeting strip */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <h2 className="font-display text-2xl font-bold text-white">{greeting}, Katy 👋</h2>
-          <p className="text-zinc-500 text-sm mt-0.5">{todayStr}</p>
-        </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-zinc-400">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          Kova OS Live
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-
-        {/* Google Calendar */}
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-blue-500/20 flex items-center justify-center">
-                <img src="https://ssl.gstatic.com/images/branding/product/1x/calendar_2020q4_48dp.png" className="w-4 h-4" alt="Calendar" />
-              </div>
-              <span className="font-display font-semibold text-white text-sm">Today's Calendar</span>
-            </div>
-            <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer"
-              className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
-              Open <ExternalLink className="w-2.5 h-2.5" />
-            </a>
-          </div>
-          <div className="space-y-2">
-            {sampleEvents.map(ev => (
-              <a key={ev.id} href={ev.htmlLink || "https://calendar.google.com"} target="_blank" rel="noopener noreferrer"
-                className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                <div className="w-1 h-full min-h-[32px] rounded-full bg-blue-500 flex-shrink-0 mt-0.5" />
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs font-medium text-white truncate">{ev.summary}</div>
-                  <div className="text-[10px] text-zinc-500 mt-0.5">
-                    {ev.start?.dateTime ? formatTime(ev.start.dateTime) : "All day"}
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-          <div className="mt-3 pt-3 border-t border-white/6">
-            <p className="text-[10px] text-zinc-600">Say "Kova, what's on my calendar today?" for live events.</p>
-          </div>
-        </div>
-
-        {/* Gmail */}
-        <div className="glass-card p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-red-500/20 flex items-center justify-center">
-                <img src="https://ssl.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png" className="w-4 h-4" alt="Gmail" />
-              </div>
-              <span className="font-display font-semibold text-white text-sm">Gmail</span>
-            </div>
-            <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer"
-              className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
-              Open <ExternalLink className="w-2.5 h-2.5" />
-            </a>
-          </div>
-          <div className="space-y-2">
-            {[
-              { label: "Inbox", url: "https://mail.google.com/mail/u/0/#inbox", icon: "📥" },
-              { label: "Unread", url: "https://mail.google.com/mail/u/0/#search/is:unread", icon: "🔴" },
-              { label: "Starred", url: "https://mail.google.com/mail/u/0/#starred", icon: "⭐" },
-              { label: "Sent", url: "https://mail.google.com/mail/u/0/#sent", icon: "📤" },
-              { label: "Drafts", url: "https://mail.google.com/mail/u/0/#drafts", icon: "📝" },
-              { label: "Compose New", url: "https://mail.google.com/mail/u/0/#compose", icon: "✏️" },
-            ].map(item => (
-              <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                <span className="text-sm flex-shrink-0">{item.icon}</span>
-                <span className="text-xs font-medium text-zinc-300 flex-1">{item.label}</span>
-                <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-              </a>
-            ))}
-          </div>
-          <div className="mt-3 pt-3 border-t border-white/6">
-            <p className="text-[10px] text-zinc-600">Say "Kova, summarize my unread emails" for AI inbox management.</p>
-          </div>
-        </div>
-
-        {/* Asana + Quick Commands */}
-        <div className="space-y-3">
-          <div className="glass-card p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg bg-pink-500/20 flex items-center justify-center">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Asana_logo.svg/48px-Asana_logo.svg.png" className="w-4 h-4" alt="Asana" />
-                </div>
-                <span className="font-display font-semibold text-white text-sm">Asana Tasks</span>
-              </div>
-              <a href="https://app.asana.com" target="_blank" rel="noopener noreferrer"
-                className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
-                Open <ExternalLink className="w-2.5 h-2.5" />
-              </a>
-            </div>
-            <div className="space-y-2">
-              {[
-                { label: "My Tasks", url: "https://app.asana.com/0/mytasks", icon: "✅" },
-                { label: "Due Today", url: "https://app.asana.com/0/mytasks/list", icon: "🗓️" },
-                { label: "Kova OS Project", url: "https://app.asana.com", icon: "⚡" },
-                { label: "Inbox", url: "https://app.asana.com/0/inbox", icon: "📥" },
-              ].map(item => (
-                <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                  <span className="text-sm flex-shrink-0">{item.icon}</span>
-                  <span className="text-xs font-medium text-zinc-300 flex-1">{item.label}</span>
-                  <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-                </a>
-              ))}
-            </div>
-          </div>
-          <div className="glass-card p-4 border-cyan-500/20">
-            <div className="text-xs font-display font-semibold text-white mb-2">⚡ Kova Quick Commands</div>
-            <div className="space-y-1.5">
-              {[
-                "Kova, what's on my calendar today?",
-                "Kova, summarize my unread emails",
-                "Kova, what tasks are due today?",
-                "Kova, add an event to my calendar",
-              ].map(cmd => (
-                <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4 truncate">{cmd}</div>
-              ))}
-            </div>
-            <button
-              onClick={() => {
-                toast.success("Morning briefing triggered! Opening Manus to compile your daily summary.", { duration: 4000 });
-                window.open("https://manus.im", "_blank");
-              }}
-              className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white text-xs font-semibold transition-all duration-200 hover:scale-[1.02] active:scale-95 shadow-lg shadow-violet-500/20"
-            >
-              <Play className="w-3.5 h-3.5" />
-              Run Briefing Now
-            </button>
-          </div>
-        </div>
-
-      </div>
-    </section>
-  );
-}
-
-// ─── COMPONENTS ──────────────────────────────────────────────────────────────
-
-function SectionHeader({ icon, title, count }: { icon: React.ReactNode; title: string; count?: number }) {
-  return (
-    <div className="flex items-center gap-3 mb-5">
-      <div className="w-8 h-8 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center text-zinc-300">
-        {icon}
-      </div>
-      <h2 className="font-display font-bold text-white text-lg">{title}</h2>
-      {count !== undefined && (
-        <span className="ml-auto text-xs font-mono text-zinc-500">{count} items</span>
-      )}
-    </div>
-  );
-}
-
-function LinkCard({ href, children, className = "" }: { href: string; children: React.ReactNode; className?: string }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className={`glass-card p-4 flex items-start gap-3 transition-all duration-200 hover:scale-[1.02] hover:brightness-110 hover:border-white/20 group cursor-pointer ${className}`}
-    >
-      {children}
-      <ExternalLink className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 flex-shrink-0 mt-0.5 transition-colors" />
-    </a>
-  );
-}
-
-function WorldCard({ world }: { world: typeof KOVA_WORLDS[0] }) {
-  const driveUrl = `https://drive.google.com/drive/folders/${world.driveId}`;
-  return (
-    <LinkCard href={driveUrl}>
-      <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${world.color} flex items-center justify-center text-lg flex-shrink-0`}>
-        {world.emoji}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-display font-semibold text-sm text-white truncate">{world.name}</div>
-        <div className="text-xs text-zinc-500 truncate mt-0.5">{world.description}</div>
-        <div className="flex gap-1 mt-1.5 flex-wrap">
-          {world.tags.map(t => (
-            <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-white/6 text-zinc-500 font-mono">{t}</span>
-          ))}
-        </div>
-      </div>
-    </LinkCard>
-  );
-}
-
-function ServiceCard({ svc }: { svc: typeof SERVICES[0] }) {
-  return (
-    <LinkCard href={svc.url}>
-      <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
-        <img src={svc.icon} alt={svc.name} className="w-5 h-5 object-contain" onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-display font-semibold text-sm text-white truncate">{svc.name}</div>
-        <div className="text-[10px] text-zinc-600 font-mono">{svc.category}</div>
-      </div>
-    </LinkCard>
-  );
-}
-
-function WixCard({ site }: { site: typeof WIX_SITES[0] }) {
-  return (
-    <LinkCard href={site.url}>
-      <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-        <Globe className="w-4 h-4 text-blue-400" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="font-display font-semibold text-sm text-white truncate">{site.name}</div>
-        <div className="text-[10px] text-zinc-600 font-mono truncate">{site.world}</div>
-      </div>
-    </LinkCard>
-  );
-}
-
-function GitHubCard({ repo }: { repo: typeof GITHUB_REPOS[0] }) {
-  return (
-    <LinkCard href={repo.url} className={repo.kova ? "glow-connected" : ""}>
-      <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
-        {repo.private ? <Lock className="w-4 h-4 text-amber-400" /> : <Github className="w-4 h-4 text-white" />}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-1.5">
-          <span className="font-mono text-xs text-white truncate">{repo.name}</span>
-          {repo.kova && <span className="text-[9px] px-1 py-0.5 rounded bg-cyan-500/20 text-cyan-400 font-mono flex-shrink-0">KOVA</span>}
-        </div>
-        <div className="text-[10px] text-zinc-500 truncate mt-0.5">{repo.desc}</div>
-        <div className="text-[10px] text-zinc-700 font-mono mt-0.5">Updated {repo.updated}</div>
-      </div>
-    </LinkCard>
-  );
-}
-
-function KatyAICard({ item }: { item: typeof KATY_AI_LINKS[0] }) {
-  const statusColor = item.status === "active" ? "text-emerald-400" : item.status === "partial" ? "text-amber-400" : "text-blue-400";
-  const statusLabel = item.status === "active" ? "Active" : item.status === "partial" ? "Partial" : "In Dev";
-  return (
-    <LinkCard href={item.url}>
-      <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-xl flex-shrink-0">
-        {item.icon}
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-display font-semibold text-sm text-white truncate">{item.name}</span>
-          <span className={`text-[10px] font-mono ${statusColor} flex-shrink-0`}>{statusLabel}</span>
-        </div>
-        <div className="text-[10px] text-zinc-500 mt-0.5 leading-relaxed">{item.desc}</div>
-      </div>
-    </LinkCard>
-  );
-}
-
-// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
-
-const NOTION_WORLD_PAGES = [
-  { name: "🖥️ Kova OS World", url: "https://app.notion.com/p/38eab88660a5811e91c5fb4d21daf249" },
-  { name: "🤖 AI World", url: "https://app.notion.com/p/38eab88660a5816fb223f098fa873630" },
-  { name: "🧠 The Anxiety Center", url: "https://app.notion.com/p/38eab88660a581e3932de81f20e7bbbf" },
-  { name: "✏️ Scribbles by Marcy", url: "https://app.notion.com/p/38eab88660a58127a210f01947ea7bf1" },
-  { name: "👧 Reagan", url: "https://app.notion.com/p/38eab88660a581ba847cd5e6bfff0809" },
-  { name: "🌸 Katy", url: "https://app.notion.com/p/38eab88660a581a080abcb094a533c94" },
-  { name: "🏠 Dojo", url: "https://app.notion.com/p/38eab88660a581808b61ec2a2eacb88e" },
-  { name: "🐾 Pets", url: "https://app.notion.com/p/38eab88660a581529129f9e24816d970" },
-  { name: "✈️ Travel", url: "https://app.notion.com/p/38eab88660a581238724df96cbafbb57" },
-  { name: "📸 Photos", url: "https://app.notion.com/p/38eab88660a58169adc9cf8075744c7b" },
-  { name: "⚽ Soccer (Turpin)", url: "https://app.notion.com/p/38eab88660a581bfa5d9e65c6c0a7dcd" },
-  { name: "🏘️ Household Collective", url: "https://app.notion.com/p/38eab88660a581bfa600e68a4434617e" },
-  { name: "📱 Apps", url: "https://app.notion.com/p/38eab88660a5816499ccde9fa68a5c0b" },
-  { name: "🔐 Vault", url: "https://app.notion.com/p/38eab88660a58125b1f2ec6f95fc4e8c" },
-  { name: "📥 Inbox", url: "https://app.notion.com/p/38eab88660a5816c924ef10125a3ddae" },
-];
-
-const SERVICE_CATEGORIES = ["All", "Google", "Microsoft", "Productivity", "AI", "Automation", "Database"];
+const STATUS_LABELS: Record<RecordedStatus, string> = {
+  connected: "Recorded connected",
+  needs_action: "Recorded action needed",
+  warning: "Recorded warning",
+  error: "Recorded error",
+  not_accessible: "Recorded unavailable",
+};
 
 export default function CommandCenter() {
-  const [svcFilter, setSvcFilter] = useState("All");
-  const [repoFilter, setRepoFilter] = useState<"all" | "kova">("kova");
-  const [searchQuery, setSearchQuery] = useState("");
+  const integrationsQuery = trpc.integration.list.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
 
-  // Build unified search index
-  const searchIndex = useMemo((): SearchItem[] => [
-    ...KOVA_WORLDS.map(w => ({ label: w.name, sub: w.description, url: `https://drive.google.com/drive/folders/${w.driveId}`, category: "World", emoji: w.emoji })),
-    ...SERVICES.map(s => ({ label: s.name, sub: s.category, url: s.url, category: "Service" })),
-    ...WIX_SITES.map(s => ({ label: s.name, sub: `Wix · ${s.world}`, url: s.url, category: "Wix" })),
-    ...GITHUB_REPOS.map(r => ({ label: r.name, sub: r.desc, url: r.url, category: "GitHub" })),
-    ...KATY_AI_LINKS.map(a => ({ label: a.name, sub: a.desc, url: a.url, category: "AI", emoji: a.icon })),
-    ...NOTION_WORLD_PAGES.map(n => ({ label: n.name, sub: "Notion page", url: n.url, category: "Notion" })),
-  ], []);
-
-  const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return [];
-    const q = searchQuery.toLowerCase();
-    return searchIndex.filter(item =>
-      item.label.toLowerCase().includes(q) || item.sub.toLowerCase().includes(q) || item.category.toLowerCase().includes(q)
-    ).slice(0, 12);
-  }, [searchQuery, searchIndex]);
-
-  const filteredServices = SERVICES.filter(s => svcFilter === "All" || s.category === svcFilter);
-  const filteredRepos = GITHUB_REPOS.filter(r => repoFilter === "all" || r.kova);
+  const groupedIntegrations = useMemo(() => {
+    const groups = new Map<
+      string,
+      NonNullable<typeof integrationsQuery.data>
+    >();
+    for (const integration of integrationsQuery.data ?? []) {
+      const current = groups.get(integration.category) ?? [];
+      current.push(integration);
+      groups.set(integration.category, current);
+    }
+    return Array.from(groups.entries());
+  }, [integrationsQuery.data]);
 
   return (
-    <div className="min-h-screen bg-background pb-16">
-      {/* Global Search Bar */}
-      <div className="sticky top-[57px] z-40 bg-background/95 backdrop-blur border-b border-white/8 px-4 py-3">
-        <div className="max-w-2xl mx-auto relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search worlds, services, repos, Wix sites..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl pl-9 pr-9 py-2.5 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-cyan-500/50 focus:bg-white/8 transition-all"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-white transition-colors">
-              <X className="w-4 h-4" />
+    <div className="min-h-screen bg-[#080810] text-white">
+      <header className="border-b border-white/8 bg-gradient-to-b from-violet-950/30 to-transparent px-6 py-10">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-violet-400/20 bg-violet-500/15">
+              <LayoutDashboard className="h-5 w-5 text-violet-300" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h1 className="font-display text-2xl font-bold">
+                  Kova OS Command Center
+                </h1>
+                <span className="inline-flex items-center gap-1 rounded-full border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
+                  <LockKeyhole className="h-2.5 w-2.5" /> Private
+                </span>
+              </div>
+              <p className="mt-1 text-sm text-zinc-400">
+                A secure launchpad for Kova services and recorded integration
+                state.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-start gap-3 rounded-xl border border-cyan-500/15 bg-cyan-500/5 p-4">
+            <ShieldCheck className="mt-0.5 h-4 w-4 flex-shrink-0 text-cyan-300" />
+            <p className="text-xs leading-relaxed text-zinc-400">
+              Personalized folder, page, site, and family mappings are
+              intentionally excluded from the public browser bundle. Provider
+              launchers below open each service at its authenticated home page.
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl space-y-10 px-6 py-8">
+        <section>
+          <div className="mb-4 flex items-center gap-3">
+            <FolderOpen className="h-4 w-4 text-cyan-300" />
+            <h2 className="font-display text-lg font-bold">
+              Service Launchers
+            </h2>
+            <span className="ml-auto text-xs text-zinc-600">
+              Provider-level links only
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {SAFE_LAUNCHERS.map(launcher => (
+              <a
+                key={launcher.name}
+                href={launcher.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex items-center gap-3 rounded-xl border border-white/8 bg-white/4 p-4 transition hover:border-white/15 hover:bg-white/7"
+              >
+                <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/6 text-lg">
+                  {launcher.icon}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-display text-sm font-semibold text-white">
+                    {launcher.name}
+                  </span>
+                  <span className="block truncate text-xs text-zinc-500">
+                    {launcher.description}
+                  </span>
+                </span>
+                <ExternalLink className="h-3.5 w-3.5 text-zinc-600 transition group-hover:text-zinc-300" />
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-4 flex items-center gap-3">
+            <Activity className="h-4 w-4 text-violet-300" />
+            <h2 className="font-display text-lg font-bold">
+              Integration Registry
+            </h2>
+            <button
+              type="button"
+              onClick={() => integrationsQuery.refetch()}
+              disabled={integrationsQuery.isFetching}
+              className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-zinc-400 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
+            >
+              <RefreshCw
+                className={`h-3 w-3 ${integrationsQuery.isFetching ? "animate-spin" : ""}`}
+              />
+              Refresh
             </button>
+          </div>
+
+          <div className="mb-4 flex items-start gap-3 rounded-xl border border-amber-500/15 bg-amber-500/5 p-4">
+            <Server className="mt-0.5 h-4 w-4 flex-shrink-0 text-amber-300" />
+            <p className="text-xs leading-relaxed text-zinc-400">
+              These are authenticated, persisted records—not live connector
+              probes. A status should only be treated as verified after Kova
+              adds evidence-backed health checks and a last-checked timestamp.
+            </p>
+          </div>
+
+          {integrationsQuery.isLoading ? (
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-28 animate-pulse rounded-xl border border-white/8 bg-white/4"
+                />
+              ))}
+            </div>
+          ) : integrationsQuery.isError ? (
+            <div className="rounded-xl border border-rose-500/20 bg-rose-500/5 p-5 text-sm text-rose-200">
+              The integration registry could not be loaded. Refresh the page or
+              verify the authenticated database connection.
+            </div>
+          ) : groupedIntegrations.length === 0 ? (
+            <div className="rounded-xl border border-white/8 bg-white/4 p-8 text-center">
+              <Zap className="mx-auto mb-3 h-6 w-6 text-zinc-600" />
+              <p className="text-sm font-medium text-zinc-300">
+                No integration records are configured.
+              </p>
+              <p className="mt-1 text-xs text-zinc-600">
+                Add records through the protected Kova integration workflow.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {groupedIntegrations.map(([category, integrations]) => (
+                <div key={category}>
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-zinc-600">
+                    {category}
+                  </h3>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {integrations.map(integration => (
+                      <article
+                        key={integration.id}
+                        className="rounded-xl border border-white/8 bg-white/4 p-4"
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-white/8 bg-white/5">
+                            {integration.icon ? (
+                              <img
+                                src={integration.icon}
+                                alt=""
+                                className="h-5 w-5 object-contain"
+                              />
+                            ) : (
+                              <Zap className="h-4 w-4 text-zinc-600" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate font-display text-sm font-semibold text-white">
+                              {integration.name}
+                            </h4>
+                            <span
+                              className={`mt-1 inline-flex rounded-full border px-2 py-0.5 text-[10px] ${STATUS_STYLES[integration.status as RecordedStatus]}`}
+                            >
+                              {
+                                STATUS_LABELS[
+                                  integration.status as RecordedStatus
+                                ]
+                              }
+                            </span>
+                          </div>
+                        </div>
+                        <p className="mt-3 line-clamp-2 text-xs leading-relaxed text-zinc-500">
+                          {integration.description ||
+                            "No description recorded."}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           )}
-        </div>
-        {/* Search Results Dropdown */}
-        {searchResults.length > 0 && (
-          <div className="max-w-2xl mx-auto mt-2 glass-card rounded-xl overflow-hidden border border-white/10 shadow-2xl">
-            {searchResults.map((item, i) => (
-              <a key={i} href={item.url} target="_blank" rel="noopener noreferrer"
-                onClick={() => setSearchQuery("")}
-                className="flex items-center gap-3 px-4 py-2.5 hover:bg-white/8 transition-colors border-b border-white/5 last:border-0 group">
-                <span className="text-sm w-5 text-center flex-shrink-0">{item.emoji || "→"}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="text-sm text-white font-medium truncate">{item.label}</div>
-                  <div className="text-[10px] text-zinc-500 truncate">{item.sub}</div>
-                </div>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/6 text-zinc-500 font-mono flex-shrink-0">{item.category}</span>
-                <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 flex-shrink-0" />
-              </a>
-            ))}
-          </div>
-        )}
-        {searchQuery && searchResults.length === 0 && (
-          <div className="max-w-2xl mx-auto mt-2 text-center text-xs text-zinc-600 py-3">No results for "{searchQuery}"</div>
-        )}
-      </div>
-
-      {/* Page Header */}
-      <div className="relative overflow-hidden border-b border-white/8">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[200px] rounded-full opacity-10 blur-3xl"
-            style={{ background: "radial-gradient(circle, oklch(0.65 0.28 320) 0%, oklch(0.72 0.20 195) 60%, transparent 100%)" }} />
-        </div>
-        <div className="container py-10 relative">
-          <div className="flex items-center gap-2 text-xs font-mono text-zinc-500 mb-3">
-            <Cpu className="w-3.5 h-3.5 text-cyan-500" />
-            KOVA OS v2.1 — Command Center
-          </div>
-          <h1 className="font-display text-3xl sm:text-4xl font-bold text-white mb-2">
-            Everything, Linked.
-          </h1>
-          <p className="text-zinc-400 text-base max-w-2xl">
-            Every world, every service, every tool — one click away. Your complete Kova OS control panel.
-          </p>
-          <div className="flex gap-3 mt-5 flex-wrap">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-              {KOVA_WORLDS.length} Worlds
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-              {SERVICES.length} Services
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-violet-500/10 border border-violet-500/20 text-xs text-violet-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-violet-400" />
-              {GITHUB_REPOS.length} GitHub Repos
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-              {WIX_SITES.length} Wix Sites
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="container py-8 space-y-12">
-
-        {/* ── TODAY PANEL ── */}
-        <TodayPanel />
-
-        {/* ── KOVA WORLDS ── */}
-        <section>
-          <SectionHeader icon={<FolderOpen className="w-4 h-4" />} title="Kova OS Worlds" count={KOVA_WORLDS.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {KOVA_WORLDS.map((w, i) => (
-              <div key={w.name} className="animate-fade-up" style={{ animationDelay: `${i * 40}ms`, opacity: 0, animationFillMode: "forwards" }}>
-                <WorldCard world={w} />
-              </div>
-            ))}
-          </div>
         </section>
 
-        {/* ── KATY AI ASSISTANT ── */}
-        <section>
-          <SectionHeader icon={<Bot className="w-4 h-4" />} title="Katy AI Assistant" count={KATY_AI_LINKS.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {KATY_AI_LINKS.map((item, i) => (
-              <div key={item.name} className="animate-fade-up" style={{ animationDelay: `${i * 40}ms`, opacity: 0, animationFillMode: "forwards" }}>
-                <KatyAICard item={item} />
-              </div>
-            ))}
-          </div>
-          <div className="mt-4 glass-card p-4 border-cyan-500/20 glow-connected">
-            <div className="flex items-start gap-3">
-              <Zap className="w-4 h-4 text-cyan-400 flex-shrink-0 mt-0.5" />
-              <div>
-                <p className="text-sm text-white font-display font-semibold mb-1">Katy AI is powered by Manus</p>
-                <p className="text-xs text-zinc-400 leading-relaxed">
-                  Manus is your primary AI and is fully connected to all Kova worlds, Google Drive, Gmail, Calendar, Slack, Notion, Asana, HubSpot, Wix, GitHub, and more. ChatGPT and Claude operate independently — their history is not currently synced into Kova OS.
-                </p>
-              </div>
+        <section className="rounded-xl border border-white/8 bg-white/4 p-5">
+          <div className="flex items-start gap-3">
+            <Github className="mt-0.5 h-4 w-4 flex-shrink-0 text-zinc-400" />
+            <div>
+              <h2 className="font-display text-sm font-semibold">
+                Private project links
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed text-zinc-500">
+                Deep links can return later through a protected server-side
+                configuration endpoint. They should never be hard-coded into
+                client source or shipped in a public JavaScript bundle.
+              </p>
             </div>
           </div>
         </section>
-
-        {/* ── CONNECTED SERVICES ── */}
-        <section>
-          <SectionHeader icon={<Globe className="w-4 h-4" />} title="Connected Services" count={filteredServices.length} />
-          <div className="flex gap-2 mb-4 flex-wrap">
-            {SERVICE_CATEGORIES.map(cat => (
-              <button key={cat} onClick={() => setSvcFilter(cat)}
-                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${svcFilter === cat ? "bg-white/10 text-white border border-white/20" : "text-zinc-500 hover:text-zinc-300"}`}>
-                {cat}
-              </button>
-            ))}
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-            {filteredServices.map((svc, i) => (
-              <div key={svc.name} className="animate-fade-up" style={{ animationDelay: `${i * 30}ms`, opacity: 0, animationFillMode: "forwards" }}>
-                <ServiceCard svc={svc} />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── WIX SITES ── */}
-        <section>
-          <SectionHeader icon={<Globe className="w-4 h-4" />} title="Wix Sites" count={WIX_SITES.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {WIX_SITES.map((site, i) => (
-              <div key={site.id} className="animate-fade-up" style={{ animationDelay: `${i * 40}ms`, opacity: 0, animationFillMode: "forwards" }}>
-                <WixCard site={site} />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── GITHUB ── */}
-        <section>
-          <SectionHeader icon={<Github className="w-4 h-4" />} title="GitHub Repositories" count={filteredRepos.length} />
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex gap-2">
-              {(["kova", "all"] as const).map(f => (
-                <button key={f} onClick={() => setRepoFilter(f)}
-                  className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${repoFilter === f ? "bg-white/10 text-white border border-white/20" : "text-zinc-500 hover:text-zinc-300"}`}>
-                  {f === "kova" ? "⚡ Kova Repos" : "All Repos"}
-                </button>
-              ))}
-            </div>
-            <a href="https://github.com/Kathrynhiggs21" target="_blank" rel="noopener noreferrer"
-              className="ml-auto flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition-colors">
-              <Github className="w-3.5 h-3.5" />
-              View all on GitHub
-              <ChevronRight className="w-3 h-3" />
-            </a>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {filteredRepos.map((repo, i) => (
-              <div key={repo.name} className="animate-fade-up" style={{ animationDelay: `${i * 40}ms`, opacity: 0, animationFillMode: "forwards" }}>
-                <GitHubCard repo={repo} />
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ── NOTION WORLD PAGES ── */}
-        <section>
-          <SectionHeader icon={<BookOpen className="w-4 h-4" />} title="Notion World Pages" count={NOTION_WORLD_PAGES.length} />
-          <p className="text-xs text-zinc-500 mb-4">Each world has a dedicated Notion page with Drive links, connected services, and GitHub repos.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-            {NOTION_WORLD_PAGES.map((page, i) => (
-              <a key={page.name} href={page.url} target="_blank" rel="noopener noreferrer"
-                className="glass-card p-3 flex items-center gap-2 text-xs font-medium text-zinc-300 hover:text-white hover:border-white/20 transition-all hover:scale-[1.02] animate-fade-up group"
-                style={{ animationDelay: `${i * 30}ms`, opacity: 0, animationFillMode: "forwards" }}>
-                <span className="text-base flex-shrink-0">{page.name.split(" ")[0]}</span>
-                <span className="truncate">{page.name.split(" ").slice(1).join(" ")}</span>
-                <ExternalLink className="w-3 h-3 text-zinc-600 group-hover:text-zinc-400 ml-auto flex-shrink-0" />
-              </a>
-            ))}
-          </div>
-        </section>
-
-        {/* ── ANDROID & SMART HOME ── */}
-        <section>
-          <SectionHeader icon={<Cpu className="w-4 h-4" />} title="Android & Smart Home" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* DroidMind */}
-            <div className="glass-card p-5 border-amber-500/20">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-600 to-orange-600 flex items-center justify-center text-lg">📱</div>
-                <div>
-                  <div className="font-display font-bold text-white text-sm">DroidMind (Primary)</div>
-                  <div className="text-[10px] text-amber-400 font-mono">⚠️ Needs Setup — Most Powerful</div>
-                </div>
-              </div>
-              <p className="text-xs text-zinc-400 mb-3 leading-relaxed">Connects Manus directly to your Samsung Galaxy S24 Ultra via ADB. Enables screenshots, file management, app control, storage optimization, and UI automation.</p>
-              <div className="space-y-1.5 mb-4">
-                {["Enable USB Debugging on S24 Ultra", "Install Python 3.13 + uv + ADB on computer", "Add DroidMind as Custom MCP in Manus Settings"].map((step, i) => (
-                  <div key={i} className="flex items-start gap-2 text-xs text-zinc-400">
-                    <span className="w-4 h-4 rounded-full bg-white/8 flex items-center justify-center text-[9px] font-mono text-zinc-500 flex-shrink-0 mt-0.5">{i + 1}</span>
-                    {step}
-                  </div>
-                ))}
-              </div>
-              <a href="https://github.com/hyperb1iss/droidmind" target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 transition-colors">
-                <Github className="w-3.5 h-3.5" /> DroidMind on GitHub <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-            {/* Automate + Smart Home */}
-            <div className="space-y-3">
-              <div className="glass-card p-4 border-blue-500/20">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-lg">🤖</span>
-                  <div>
-                    <div className="font-display font-semibold text-white text-sm">Automate App (Wireless)</div>
-                    <div className="text-[10px] text-amber-400 font-mono">⚠️ Needs Setup</div>
-                  </div>
-                </div>
-                <p className="text-xs text-zinc-400 mb-2">No cable needed. Install Automate, create a webhook flow for SMS/notifications, paste the URL in Manus.</p>
-                <a href="https://play.google.com/store/apps/details?id=com.llamalab.automate" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-xs text-blue-400 hover:text-blue-300 transition-colors">
-                  Install Automate on Google Play <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-              <div className="glass-card p-4 border-emerald-500/20">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-lg">🏠</span>
-                  <div>
-                    <div className="font-display font-semibold text-white text-sm">Smart Home</div>
-                    <div className="text-[10px] text-emerald-400 font-mono">Via Google Assistant</div>
-                  </div>
-                </div>
-                <p className="text-xs text-zinc-400 mb-2">Dyson, smart lights, and all Google Home devices via Google Assistant routines. Say: "Kova, turn up my Dyson."</p>
-                <a href="https://home.google.com" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
-                  Open Google Home <ExternalLink className="w-3 h-3" />
-                </a>
-              </div>
-              <div className="glass-card p-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <span className="text-lg">💾</span>
-                  <div className="font-display font-semibold text-white text-sm">Storage Optimization</div>
-                </div>
-                <p className="text-xs text-zinc-400">Once DroidMind is connected: list apps by storage, find large files, move photos to Drive, clear caches in bulk.</p>
-              </div>
-            </div>
-          </div>
-          <div className="mt-3 glass-card p-3 border-violet-500/20">
-            <a href="https://app.notion.com/p/393ab88660a581c0b34bded1d49c5120" target="_blank" rel="noopener noreferrer"
-              className="flex items-center gap-2 text-xs text-violet-400 hover:text-violet-300 transition-colors">
-              <BookOpen className="w-3.5 h-3.5" /> Full Android Integration Guide in Notion <ExternalLink className="w-3 h-3" />
-            </a>
-          </div>
-        </section>
-
-        {/* ── SLACK PANEL ── */}
-        <section>
-          <SectionHeader icon={<Globe className="w-4 h-4" />} title="Slack Workspace" />
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="glass-card p-5 border-purple-500/20">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-purple-500/20 flex items-center justify-center">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d5/Slack_icon_2019.svg/48px-Slack_icon_2019.svg.png" className="w-4 h-4" alt="Slack" />
-                  </div>
-                  <span className="font-display font-semibold text-white text-sm">Slack Channels</span>
-                </div>
-                <a href="https://slack.com" target="_blank" rel="noopener noreferrer"
-                  className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
-                  Open <ExternalLink className="w-2.5 h-2.5" />
-                </a>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { label: "Kova OS", desc: "Core AI system channel", icon: "⚡", url: "https://slack.com/app_redirect?channel=kova-os" },
-                  { label: "Scribbles by Marcy", desc: "Publishing & brand updates", icon: "✏️", url: "https://slack.com/app_redirect?channel=scribbles" },
-                  { label: "TAC / Mental Health", desc: "The Anxiety Center projects", icon: "🧠", url: "https://slack.com/app_redirect?channel=tac" },
-                  { label: "Reagan", desc: "Homeschool & activities", icon: "👧", url: "https://slack.com/app_redirect?channel=reagan" },
-                  { label: "All Channels", desc: "Browse all workspace channels", icon: "📋", url: "https://slack.com" },
-                ].map(item => (
-                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                    <span className="text-sm flex-shrink-0">{item.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-zinc-300 truncate">{item.label}</div>
-                      <div className="text-[10px] text-zinc-600 truncate">{item.desc}</div>
-                    </div>
-                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-                  </a>
-                ))}
-              </div>
-            </div>
-            <div className="glass-card p-5">
-              <div className="font-display font-semibold text-white text-sm mb-3">⚡ Slack Quick Commands</div>
-              <div className="space-y-1.5 mb-4">
-                {[
-                  "Kova, send a Slack message to #kova-os",
-                  "Kova, search Slack for 'Scribbles launch'",
-                  "Kova, what was discussed in #reagan today?",
-                  "Kova, post an update to #tac",
-                ].map(cmd => (
-                  <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4">{cmd}</div>
-                ))}
-              </div>
-              <div className="pt-3 border-t border-white/6">
-                <p className="text-[10px] text-zinc-600">Manus is fully connected to Slack — send messages, search channels, and read threads by voice or text.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── REAGAN WORLD SUB-HUB ── */}
-        <section>
-          <SectionHeader icon={<Bot className="w-4 h-4" />} title="Reagan World" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Homeschool Dashboard */}
-            <div className="glass-card p-5 border-orange-500/20">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-lg">👧</div>
-                <div>
-                  <div className="font-display font-bold text-white text-sm">Homeschool Dashboard</div>
-                  <div className="text-[10px] text-emerald-400 font-mono">✅ Live on GitHub</div>
-                </div>
-              </div>
-              <p className="text-xs text-zinc-400 mb-3 leading-relaxed">Daily agenda, Adventure of the Day, skill warm-ups, read-alouds, and choice blocks. Kiwi the animated bird companion lives here.</p>
-              <div className="space-y-2">
-                {[
-                  { label: "GitHub Repo", url: "https://github.com/Kathrynhiggs21/reagan_homeschool_dashboard", icon: "🐙" },
-                  { label: "Reagan Drive Folder", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "📁" },
-                  { label: "Reagan Notion Page", url: "https://app.notion.com/p/393ab88660a581049465d2a61bcb7793", icon: "📋" },
-                ].map(item => (
-                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                    <span className="text-sm flex-shrink-0">{item.icon}</span>
-                    <span className="text-xs font-medium text-zinc-300 flex-1">{item.label}</span>
-                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-                  </a>
-                ))}
-              </div>
-            </div>
-            {/* Curriculum & Schedule */}
-            <div className="glass-card p-5">
-              <div className="font-display font-semibold text-white text-sm mb-3">📚 Curriculum & Schedule</div>
-              <div className="space-y-2">
-                {[
-                  { label: "Math", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "🔢" },
-                  { label: "Reading & Writing", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "📖" },
-                  { label: "Science", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "🔬" },
-                  { label: "History", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "🏛️" },
-                  { label: "Art & PE", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "🎨" },
-                  { label: "Google Calendar", url: "https://calendar.google.com", icon: "🗓️" },
-                ].map(item => (
-                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                    <span className="text-sm flex-shrink-0">{item.icon}</span>
-                    <span className="text-xs font-medium text-zinc-300 flex-1">{item.label}</span>
-                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-                  </a>
-                ))}
-              </div>
-            </div>
-            {/* Pending + Quick Commands */}
-            <div className="space-y-3">
-              <div className="glass-card p-4 border-amber-500/20">
-                <div className="text-xs font-display font-semibold text-white mb-2">⚠️ Pending Tasks</div>
-                <div className="space-y-1.5">
-                  {[
-                    "Create printable PDF daily agenda",
-                    "Organize curriculum worksheets in Drive",
-                    "Set up schedule shift feature",
-                    "Update Kiwi bird behaviors",
-                    "Add fun printable samples",
-                  ].map(task => (
-                    <div key={task} className="flex items-start gap-2 text-[10px] text-zinc-500">
-                      <span className="text-amber-500 flex-shrink-0 mt-0.5">○</span>
-                      {task}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="glass-card p-4 border-cyan-500/20">
-                <div className="text-xs font-display font-semibold text-white mb-2">⚡ Reagan Quick Commands</div>
-                <div className="space-y-1.5">
-                  {[
-                    "Kova, build Reagan's schedule for today",
-                    "Kova, add a math worksheet to Drive",
-                    "Kova, what's on Reagan's calendar?",
-                  ].map(cmd => (
-                    <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4">{cmd}</div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── SCRIBBLES BY MARCY SUB-HUB ── */}
-        <section>
-          <SectionHeader icon={<Globe className="w-4 h-4" />} title="Scribbles by Marcy" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Brand Hub */}
-            <div className="glass-card p-5 border-pink-500/20">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center text-lg">✏️</div>
-                <div>
-                  <div className="font-display font-bold text-white text-sm">Scribbles by Marcy LLC</div>
-                  <div className="text-[10px] text-emerald-400 font-mono">✅ Live — scribblesbymarcy.com</div>
-                </div>
-              </div>
-              <p className="text-xs text-zinc-400 mb-3 leading-relaxed">Children's publishing brand. The Scribbleverse universe with Milli, Milton, and the emotional wellness book series.</p>
-              <div className="space-y-2">
-                {[
-                  { label: "Wix Dashboard (Main Site)", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/home", icon: "🌐" },
-                  { label: "Wix Dashboard (Scribbleverse)", url: "https://manage.wix.com/dashboard/105505f4-72ec-48f7-878c-57091688bd1a/home", icon: "🌐" },
-                  { label: "Scribbles Drive Folder", url: "https://drive.google.com/drive/folders/1JJbJjj3Wd9sMFbgqBkh5O3qQqNxpGFMU", icon: "📁" },
-                  { label: "Scribbles Notion Page", url: "https://www.notion.so/31bab88660a5819db8b5d822aec837f6", icon: "📋" },
-                  { label: "GitHub — Scribbles Repos", url: "https://github.com/Kathrynhiggs21?tab=repositories", icon: "🐙" },
-                ].map(item => (
-                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                    <span className="text-sm flex-shrink-0">{item.icon}</span>
-                    <span className="text-xs font-medium text-zinc-300 flex-1 truncate">{item.label}</span>
-                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-                  </a>
-                ))}
-              </div>
-            </div>
-            {/* Wix Sites + Marketing */}
-            <div className="glass-card p-5">
-              <div className="font-display font-semibold text-white text-sm mb-3">🛍️ Wix Sites & Marketing</div>
-              <div className="space-y-2">
-                {[
-                  { label: "Store & Products", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/store/products", icon: "🛒" },
-                  { label: "Blog Manager", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/blog", icon: "📝" },
-                  { label: "Email Campaigns", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/email-marketing/home", icon: "📧" },
-                  { label: "Analytics", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/analytics/overview", icon: "📊" },
-                  { label: "Hope 4 Anxiety Site", url: "https://manage.wix.com/dashboard/534d831d-8dc0-46be-bc50-7ed84eff34ea/home", icon: "🧠" },
-                  { label: "TAC for Hope Site", url: "https://manage.wix.com/dashboard/07574d93-4327-44c0-96ca-56ead8415edd/home", icon: "💚" },
-                ].map(item => (
-                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                    <span className="text-sm flex-shrink-0">{item.icon}</span>
-                    <span className="text-xs font-medium text-zinc-300 flex-1 truncate">{item.label}</span>
-                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-                  </a>
-                ))}
-              </div>
-            </div>
-            {/* Pending + Quick Commands */}
-            <div className="space-y-3">
-              <div className="glass-card p-4 border-amber-500/20">
-                <div className="text-xs font-display font-semibold text-white mb-2">⚠️ Pending Tasks</div>
-                <div className="space-y-1.5">
-                  {[
-                    "Connect US Bank to Wix Payments",
-                    "Set up Avalara sales tax automation",
-                    "Configure Media Mail flat rate shipping",
-                    "Sync Google Merchant Center",
-                    "Launch Milton AI chatbot on site",
-                    "Create printable activity downloads",
-                  ].map(task => (
-                    <div key={task} className="flex items-start gap-2 text-[10px] text-zinc-500">
-                      <span className="text-amber-500 flex-shrink-0 mt-0.5">○</span>
-                      {task}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="glass-card p-4 border-pink-500/20">
-                <div className="text-xs font-display font-semibold text-white mb-2">⚡ Scribbles Quick Commands</div>
-                <div className="space-y-1.5">
-                  {[
-                    "Kova, write a Scribbles blog post",
-                    "Kova, update the Wix store product",
-                    "Kova, create a social media post for Scribbles",
-                    "Kova, check Scribbles site analytics",
-                  ].map(cmd => (
-                    <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4">{cmd}</div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── FINANCE WORLD TRACKER ── */}
-        <section>
-          <SectionHeader icon={<span className="text-sm">💰</span>} title="Finance World" />
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {/* Scribbles Revenue */}
-            <div className="glass-card p-5 border-emerald-500/20">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center text-lg">💳</div>
-                <div>
-                  <div className="font-display font-bold text-white text-sm">Scribbles by Marcy LLC</div>
-                  <div className="text-[10px] text-zinc-400 font-mono">Revenue & Payments</div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { label: "Wix Payments Dashboard", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/payments", icon: "💳" },
-                  { label: "Wix Orders", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/store/orders", icon: "📦" },
-                  { label: "Wix Analytics", url: "https://manage.wix.com/dashboard/db4a6aef-9fa8-4569-a5d0-c43b9a491eb4/analytics/overview", icon: "📊" },
-                  { label: "Finance Drive Folder", url: "https://drive.google.com", icon: "📁" },
-                  { label: "Financial Workbook v3", url: "https://drive.google.com", icon: "📊" },
-                ].map(item => (
-                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                    <span className="text-sm flex-shrink-0">{item.icon}</span>
-                    <span className="text-xs font-medium text-zinc-300 flex-1 truncate">{item.label}</span>
-                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-                  </a>
-                ))}
-              </div>
-            </div>
-            {/* Banking & Tax */}
-            <div className="glass-card p-5">
-              <div className="font-display font-semibold text-white text-sm mb-3">🏦 Banking & Tax</div>
-              <div className="space-y-2">
-                {[
-                  { label: "US Bank Online", url: "https://www.usbank.com/online-banking.html", icon: "🏦" },
-                  { label: "Avalara Tax Portal", url: "https://home.avalara.com", icon: "🧳" },
-                  { label: "IRS Business Portal", url: "https://www.irs.gov/businesses", icon: "📝" },
-                  { label: "Ohio Business Gateway", url: "https://business.ohio.gov", icon: "🏙️" },
-                  { label: "Google Merchant Center", url: "https://merchants.google.com", icon: "🛍️" },
-                ].map(item => (
-                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                    <span className="text-sm flex-shrink-0">{item.icon}</span>
-                    <span className="text-xs font-medium text-zinc-300 flex-1 truncate">{item.label}</span>
-                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-                  </a>
-                ))}
-              </div>
-            </div>
-            {/* Pending Finance Tasks + Quick Commands */}
-            <div className="space-y-3">
-              <div className="glass-card p-4 border-amber-500/20">
-                <div className="text-xs font-display font-semibold text-white mb-2">⚠️ Pending Finance Tasks</div>
-                <div className="space-y-1.5">
-                  {[
-                    "Connect US Bank to Wix Payments",
-                    "Set up Avalara sales tax automation",
-                    "Configure Media Mail flat rate shipping",
-                    "Sync Google Merchant Center products",
-                    "Set up quarterly tax reminders",
-                  ].map(task => (
-                    <div key={task} className="flex items-start gap-2 text-[10px] text-zinc-500">
-                      <span className="text-amber-500 flex-shrink-0 mt-0.5">○</span>
-                      {task}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="glass-card p-4 border-emerald-500/20">
-                <div className="text-xs font-display font-semibold text-white mb-2">⚡ Finance Quick Commands</div>
-                <div className="space-y-1.5">
-                  {[
-                    "Kova, show my Scribbles revenue",
-                    "Kova, scan this receipt to Finance folder",
-                    "Kova, create a monthly expense report",
-                    "Kova, check my Wix orders today",
-                  ].map(cmd => (
-                    <div key={cmd} className="text-[10px] text-zinc-500 font-mono px-2 py-1 rounded bg-white/4">{cmd}</div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── QUICK ACTIONS ── */}
-        <section>
-          <SectionHeader icon={<Zap className="w-4 h-4" />} title="Quick Actions" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {[
-              { label: "Configure Zapier Actions", desc: "Add automation actions to unlock Zapier", url: "https://mcp.zapier.com/mcp/servers/e8c7456b-6c58-4026-9c3a-1cbec58f4f10/config", urgent: true },
-              { label: "Set Up DroidMind", desc: "Connect S24 Ultra via ADB", url: "https://github.com/hyperb1iss/droidmind", urgent: true },
-              { label: "Open Make Dashboard", desc: "Create an On Demand scenario", url: "https://www.make.com/en/login?source=google", urgent: false },
-              { label: "Open Canva", desc: "Design and export via Google login", url: "https://www.canva.com/login?authMethod=google", urgent: false },
-              { label: "Kova OS Notion Dashboard", desc: "Open your live master dashboard", url: "https://www.notion.so/31bab88660a5819db8b5d822aec837f6", urgent: false },
-              { label: "GitHub Profile", desc: "View all your repositories", url: "https://github.com/Kathrynhiggs21", urgent: false },
-            ].map((action, i) => (
-              <a key={action.label} href={action.url} target="_blank" rel="noopener noreferrer"
-                className={`glass-card p-4 flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] hover:brightness-110 group cursor-pointer animate-fade-up ${action.urgent ? "glow-action border-amber-500/20" : ""}`}
-                style={{ animationDelay: `${i * 40}ms`, opacity: 0, animationFillMode: "forwards" }}>
-                <div className={`w-2 h-2 rounded-full flex-shrink-0 ${action.urgent ? "bg-amber-400 animate-status-pulse" : "bg-emerald-400"}`} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-display font-semibold text-sm text-white truncate">{action.label}</div>
-                  <div className="text-[10px] text-zinc-500 mt-0.5">{action.desc}</div>
-                </div>
-                <ExternalLink className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 flex-shrink-0 transition-colors" />
-              </a>
-            ))}
-          </div>
-                </section>
-
-        {/* ── REAGAN HOMESCHOOL SCHEDULE ── */}
-        <section>
-          <SectionHeader icon={<GraduationCap className="w-4 h-4" />} title="Reagan's Homeschool" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Schedule panel */}
-            <div className="glass-card p-5 md:col-span-2">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">👧</span>
-                  <span className="font-display font-semibold text-white text-sm">Weekly Curriculum Overview</span>
-                </div>
-                <a href="https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu" target="_blank" rel="noopener noreferrer"
-                  className="text-[10px] text-zinc-500 hover:text-zinc-300 flex items-center gap-1 transition-colors">
-                  Drive <ExternalLink className="w-2.5 h-2.5" />
-                </a>
-              </div>
-              <div className="grid grid-cols-5 gap-2 mb-4">
-                {["Mon", "Tue", "Wed", "Thu", "Fri"].map((day, i) => (
-                  <div key={day} className="text-center">
-                    <div className={`text-[10px] font-semibold mb-2 ${
-                      new Date().getDay() === i + 1 ? "text-violet-400" : "text-zinc-500"
-                    }`}>{day}</div>
-                    <div className="space-y-1">
-                      {["Math", "Reading", "Science", "Writing"].map(subj => (
-                        <div key={subj} className={`text-[9px] px-1.5 py-1 rounded text-center truncate ${
-                          new Date().getDay() === i + 1
-                            ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
-                            : "bg-white/4 text-zinc-500"
-                        }`}>{subj}</div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <a href="https://github.com/Kathrynhiggs21/Reagan-App-" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500/15 border border-orange-500/25 text-orange-300 text-xs font-medium hover:bg-orange-500/25 transition-colors">
-                  <Github className="w-3 h-3" /> Reagan App Repo
-                </a>
-                <a href="https://www.notion.so" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/8 border border-white/12 text-zinc-300 text-xs font-medium hover:bg-white/12 transition-colors">
-                  📓 Notion World Page
-                </a>
-                <a href="https://calendar.google.com" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/15 border border-blue-500/25 text-blue-300 text-xs font-medium hover:bg-blue-500/25 transition-colors">
-                  📅 Reagan's Calendar
-                </a>
-              </div>
-            </div>
-            {/* Quick links panel */}
-            <div className="glass-card p-5">
-              <div className="text-xs font-display font-semibold text-white mb-3">📚 Learning Platforms</div>
-              <div className="space-y-2">
-                {[
-                  { label: "IXL Learning", url: "https://www.ixl.com", icon: "🎯", desc: "Math & ELA practice" },
-                  { label: "Khan Academy", url: "https://www.khanacademy.org", icon: "🏛️", desc: "Free curriculum" },
-                  { label: "Google Classroom", url: "https://classroom.google.com", icon: "🏫", desc: "Assignment hub" },
-                  { label: "YouTube Learning", url: "https://www.youtube.com/education", icon: "▶️", desc: "Video lessons" },
-                  { label: "Reagan's Drive", url: "https://drive.google.com/drive/folders/16rshT309izimpnv_gEO9BMwaXosO7Nmu", icon: "📁", desc: "All Reagan files" },
-                ].map(item => (
-                  <a key={item.label} href={item.url} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-2.5 rounded-lg bg-white/4 hover:bg-white/8 transition-colors group">
-                    <span className="text-sm flex-shrink-0">{item.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-medium text-zinc-300 truncate">{item.label}</div>
-                      <div className="text-[10px] text-zinc-600">{item.desc}</div>
-                    </div>
-                    <ExternalLink className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400 transition-colors" />
-                  </a>
-                ))}
-              </div>
-              <div className="mt-3 pt-3 border-t border-white/6">
-                <div className="text-[10px] text-zinc-600 font-mono">Say "Kova, build Reagan's schedule for today"</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── KOVA OS CHANGELOG ── */}
-        <section>
-          <SectionHeader icon={<Activity className="w-4 h-4" />} title="Kova OS Changelog" />
-          <div className="glass-card p-5">
-            <div className="space-y-3">
-              {[
-                { date: "Jul 4, 2026", action: "Built Finance World Tracker, Voice Commands page (/commands), and Scribbles Content Calendar in Notion", type: "build", icon: "⚡" },
-                { date: "Jul 4, 2026", action: "Fixed all 404 reconnect links — Make, Canva, Neon, tl;dv now use direct Google OAuth URLs", type: "fix", icon: "🔧" },
-                { date: "Jul 4, 2026", action: "Scheduled daily briefing — every weekday at 7:30 AM ET", type: "schedule", icon: "⏰" },
-                { date: "Jul 4, 2026", action: "Added Scribbles by Marcy sub-hub to Command Center with 9 Wix site links", type: "build", icon: "✏️" },
-                { date: "Jul 4, 2026", action: "Created 5 new Notion world pages: TAC, Reagan, Katy, Soccer, Kova OS Roadmap", type: "sync", icon: "📓" },
-                { date: "Jul 4, 2026", action: "Installed kova-daily-briefing skill — morning briefing across Calendar, Gmail, Asana, Slack", type: "skill", icon: "🛠️" },
-                { date: "Jul 3, 2026", action: "Added Slack panel and Reagan World sub-hub to Command Center", type: "build", icon: "💬" },
-                { date: "Jul 3, 2026", action: "Built Android & Smart Home section with DroidMind setup guide", type: "build", icon: "📱" },
-                { date: "Jul 3, 2026", action: "Uploaded Kova OS Master Workbook v3 (8 tabs) to Google Drive Documentation folder", type: "sync", icon: "📊" },
-                { date: "Jul 3, 2026", action: "Installed kova-os-sync skill — full reusable sync workflow with scripts and references", type: "skill", icon: "🛠️" },
-                { date: "Jul 3, 2026", action: "Built Today Panel with Calendar, Gmail, Asana, and Kova Quick Commands", type: "build", icon: "🌅" },
-                { date: "Jul 3, 2026", action: "Created Kova OS Master Dashboard in Notion with 15 world pages and integration status", type: "sync", icon: "📓" },
-                { date: "Jul 3, 2026", action: "Synced Google Drive — created 70+ subfolders across all 15 Kova worlds", type: "sync", icon: "📁" },
-                { date: "Jul 3, 2026", action: "Launched Kova OS Integration Hub at kovaintegrate-kywzhjdn.manus.space", type: "launch", icon: "🚀" },
-              ].map((entry, i) => (
-                <div key={i} className="flex items-start gap-3 py-2.5 border-b border-white/5 last:border-0">
-                  <span className="text-base flex-shrink-0 mt-0.5">{entry.icon}</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-zinc-300 leading-relaxed">{entry.action}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Clock className="w-2.5 h-2.5 text-zinc-600" />
-                      <span className="text-[10px] text-zinc-600">{entry.date}</span>
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${
-                        entry.type === "build" ? "bg-violet-500/15 text-violet-400" :
-                        entry.type === "fix" ? "bg-amber-500/15 text-amber-400" :
-                        entry.type === "sync" ? "bg-blue-500/15 text-blue-400" :
-                        entry.type === "skill" ? "bg-emerald-500/15 text-emerald-400" :
-                        entry.type === "launch" ? "bg-fuchsia-500/15 text-fuchsia-400" :
-                        "bg-zinc-500/15 text-zinc-400"
-                      }`}>{entry.type}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-      </div>
+      </main>
     </div>
   );
 }
