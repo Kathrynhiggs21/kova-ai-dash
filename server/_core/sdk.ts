@@ -1,4 +1,4 @@
-import { AXIOS_TIMEOUT_MS, COOKIE_NAME, ONE_YEAR_MS, decodeOAuthState } from "@shared/const";
+import { AXIOS_TIMEOUT_MS, COOKIE_NAME, SESSION_TTL_MS, decodeOAuthState } from "@shared/const";
 import { ForbiddenError } from "@shared/_core/errors";
 import axios, { type AxiosInstance } from "axios";
 import { parse as parseCookieHeader } from "cookie";
@@ -155,6 +155,9 @@ class SDKServer {
 
   private getSessionSecret() {
     const secret = ENV.cookieSecret;
+    if (secret.length < 32) {
+      throw new Error("JWT_SECRET must be configured with at least 32 characters");
+    }
     return new TextEncoder().encode(secret);
   }
 
@@ -181,8 +184,11 @@ class SDKServer {
     payload: SessionPayload,
     options: { expiresInMs?: number } = {}
   ): Promise<string> {
+    if (!ENV.appId) {
+      throw new Error("VITE_APP_ID must be configured");
+    }
     const issuedAt = Date.now();
-    const expiresInMs = options.expiresInMs ?? ONE_YEAR_MS;
+    const expiresInMs = options.expiresInMs ?? SESSION_TTL_MS;
     const expirationSeconds = Math.floor((issuedAt + expiresInMs) / 1000);
     const secretKey = this.getSessionSecret();
 
@@ -192,6 +198,9 @@ class SDKServer {
       name: payload.name,
     })
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+      .setIssuedAt()
+      .setIssuer("kovaos.com")
+      .setAudience(ENV.appId)
       .setExpirationTime(expirationSeconds)
       .sign(secretKey);
   }
@@ -206,15 +215,21 @@ class SDKServer {
 
     try {
       const secretKey = this.getSessionSecret();
+      if (!ENV.appId) {
+        throw new Error("VITE_APP_ID must be configured");
+      }
       const { payload } = await jwtVerify(cookieValue, secretKey, {
         algorithms: ["HS256"],
+        issuer: "kovaos.com",
+        audience: ENV.appId,
       });
       const { openId, appId, name } = payload as Record<string, unknown>;
 
       if (
         !isNonEmptyString(openId) ||
         !isNonEmptyString(appId) ||
-        !isNonEmptyString(name)
+        !isNonEmptyString(name) ||
+        appId !== ENV.appId
       ) {
         console.warn("[Auth] Session payload missing required fields");
         return null;
