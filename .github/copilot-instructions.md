@@ -973,4 +973,6 @@ Do not include or migrate the legacy renderer.
 
 When uncertain, preserve code and document the decision rather than deleting it.
 
+Repository evidence may still show transitional or overlapping dashboard responsibilities, so audit current ownership and migration status before treating this repository as the sole long-term frontend authority.
+
 “Treat this as current authenticated KOVA Command Center. Prioritize UI, API boundary, authentication, health status, and CI.”
