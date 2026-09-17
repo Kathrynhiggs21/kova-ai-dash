@@ -19,7 +19,6 @@ jobs:
         with:
           # Match the previously verified repo CI runtime and avoid runner-default drift.
           node-version: "22"
-          cache: pnpm
       - run: corepack enable
       - run: pnpm install --frozen-lockfile
       - name: Type check
