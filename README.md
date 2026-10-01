@@ -1,29 +1,23 @@
-# KOVA OS Dashboard
+# KOVA Dashboard Feature Donor
 
-React dashboard and integration hub for KOVA OS.
+Historical dashboard implementation retained only as a migration source for the canonical KOVA OS application.
 
-## Scope
+## Canonical runtime
 
-This repository owns dashboard UI, user-facing integration state, authenticated API access, persistence, and file-storage UI. It does not own the overall KOVA architecture. Canonical repository roles live in [Kathrynhiggs21/Kova-ai-SYSTEM](https://github.com/Kathrynhiggs21/Kova-ai-SYSTEM).
+- **Core/control plane:** `Kathrynhiggs21/Kova-ai-SYSTEM`
+- **Authenticated application:** `Kathrynhiggs21/kovaos-site`
+- **Production domain:** `kovaos.com`
 
-Authentication components and token handling are documented in [docs/authentication.md](docs/authentication.md).
+This repository is **not** an active runtime, deployment target, or source of truth.
 
-## Development
+## Donor scope
 
-```bash
-corepack pnpm install --frozen-lockfile
-corepack pnpm check
-corepack pnpm test
-corepack pnpm build
-corepack pnpm dev
-```
+Potentially useful material includes dashboard/command-center UI, KOVA orb/chat components, storage/file UI patterns, persistence tests, and authentication documentation. Each item must be audited and migrated through reviewed pull requests into the canonical repositories.
 
-Use the package-manager version pinned in `package.json`.
+Do not deploy this repository as a competing dashboard.
 
-## Production boundary
+## Lifecycle
 
-The intended public route is `https://kovaos.com/dashboard`. Secrets belong in the deployment environment. Never expose `JWT_SECRET`, database credentials, provider tokens, or API keys through `VITE_` variables or browser code.
+**DISABLED FEATURE DONOR — archive after verified migration.**
 
-## Status
-
-Enabled in the KOVA runtime registry as the current dashboard candidate. Consolidation with `kovaos-site` must happen through an explicit, tested migration rather than maintaining two competing dashboards.
+Never commit secrets, production credentials, tokens, private exports, or user data.
