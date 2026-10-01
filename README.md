@@ -1,23 +1,24 @@
-# KOVA Dashboard Feature Donor
+# KOVA Dashboard Donor
 
-Historical dashboard implementation retained only as a migration source for the canonical KOVA OS application.
+This repository preserves legacy React dashboard code as a **disabled migration source**. The canonical authenticated KOVA web application, including `/dashboard`, is [Kathrynhiggs21/kovaos-site](https://github.com/Kathrynhiggs21/kovaos-site) for `kovaos.com`.
 
-## Canonical runtime
+The canonical orchestration hub and repository registry are [Kathrynhiggs21/Kova-ai-SYSTEM](https://github.com/Kathrynhiggs21/Kova-ai-SYSTEM). `kova_repos_config.json` governs promotion and runtime enablement. Do not deploy this donor as a parallel KOVA application.
 
-- **Core/control plane:** `Kathrynhiggs21/Kova-ai-SYSTEM`
-- **Authenticated application:** `Kathrynhiggs21/kovaos-site`
-- **Production domain:** `kovaos.com`
+## Development checks
 
-This repository is **not** an active runtime, deployment target, or source of truth.
+Use the package-manager version pinned in `package.json`:
 
-## Donor scope
+```bash
+corepack pnpm install --frozen-lockfile
+corepack pnpm check
+corepack pnpm test
+corepack pnpm build
+```
 
-Potentially useful material includes dashboard/command-center UI, KOVA orb/chat components, storage/file UI patterns, persistence tests, and authentication documentation. Each item must be audited and migrated through reviewed pull requests into the canonical repositories.
+The CI workflow checks this donor's types, tests, and build. Passing those checks does not establish production deployment or provider connectivity.
 
-Do not deploy this repository as a competing dashboard.
+## Migration and security
 
-## Lifecycle
+Preserve useful source and history. Transfer features through reviewed changes to `kovaos-site`, rather than maintaining two dashboards. `docs/authentication.md` describes the legacy donor implementation and is not the canonical web deployment guide.
 
-**DISABLED FEATURE DONOR — archive after verified migration.**
-
-Never commit secrets, production credentials, tokens, private exports, or user data.
+Keep credentials in server-side environment variables. Never expose signing secrets, database credentials, provider tokens, or API keys through browser code or `VITE_` variables. Follow `AGENTS.md` for one-home-per-artifact, accessibility, and owner approval boundaries.
