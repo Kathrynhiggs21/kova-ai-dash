@@ -1,0 +1,26 @@
+queue_rules:
+  - name: default
+    update_method: rebase
+    conditions:
+      - check-success~=.*
+
+pull_request_rules:
+  - name: mark mergify as active on every PR
+    conditions:
+      - base~=^.+$
+    actions:
+      label:
+        add:
+          - mergify-active
+
+  - name: queue automerge when approved and labeled
+    conditions:
+      - base=main
+      - label=automerge
+      - -draft
+      - "#approved-reviews-by>=1"
+      - -changes-requested-reviews-by=*
+      - check-success~=.*
+    actions:
+      queue:
+        name: default
