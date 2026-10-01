@@ -1,29 +1,24 @@
-# KOVA OS Dashboard
+# KOVA Dashboard Donor
 
-React dashboard and integration hub for KOVA OS.
+This repository preserves legacy React dashboard code as a **disabled migration source**. The canonical authenticated KOVA web application, including `/dashboard`, is [Kathrynhiggs21/kovaos-site](https://github.com/Kathrynhiggs21/kovaos-site) for `kovaos.com`.
 
-## Scope
+The canonical orchestration hub and repository registry are [Kathrynhiggs21/Kova-ai-SYSTEM](https://github.com/Kathrynhiggs21/Kova-ai-SYSTEM). `kova_repos_config.json` governs promotion and runtime enablement. Do not deploy this donor as a parallel KOVA application.
 
-This repository owns dashboard UI, user-facing integration state, authenticated API access, persistence, and file-storage UI. It does not own the overall KOVA architecture. Canonical repository roles live in [Kathrynhiggs21/Kova-ai-SYSTEM](https://github.com/Kathrynhiggs21/Kova-ai-SYSTEM).
+## Development checks
 
-Authentication components and token handling are documented in [docs/authentication.md](docs/authentication.md).
-
-## Development
+Use the package-manager version pinned in `package.json`:
 
 ```bash
 corepack pnpm install --frozen-lockfile
 corepack pnpm check
 corepack pnpm test
 corepack pnpm build
-corepack pnpm dev
 ```
 
-Use the package-manager version pinned in `package.json`.
+The CI workflow checks this donor's types, tests, and build. Passing those checks does not establish production deployment or provider connectivity.
 
-## Production boundary
+## Migration and security
 
-The intended public route is `https://kovaos.com/dashboard`. Secrets belong in the deployment environment. Never expose `JWT_SECRET`, database credentials, provider tokens, or API keys through `VITE_` variables or browser code.
+Preserve useful source and history. Transfer features through reviewed changes to `kovaos-site`, rather than maintaining two dashboards. `docs/authentication.md` describes the legacy donor implementation and is not the canonical web deployment guide.
 
-## Status
-
-Enabled in the KOVA runtime registry as the current dashboard candidate. Consolidation with `kovaos-site` must happen through an explicit, tested migration rather than maintaining two competing dashboards.
+Keep credentials in server-side environment variables. Never expose signing secrets, database credentials, provider tokens, or API keys through browser code or `VITE_` variables. Follow `AGENTS.md` for one-home-per-artifact, accessibility, and owner approval boundaries.
